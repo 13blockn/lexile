@@ -1,0 +1,66 @@
+# Node modules
+node_modules/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Build outputs
+build/
+dist/
+out/
+.next/
+
+# TypeScript
+*.tsbuildinfo
+
+# Dependencies
+package-lock.json
+yarn.lock
+
+# IDE and Editor settings
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Temporary files
+tmp/
+temp/
+
+# MacOS system files
+.DS_Store
+
+# Coverage directory used by testing tools
+coverage/
+
+# ESLint cache
+.eslintcache
+
+# Optional npm cache directory
+.npm/
+
+# Jest testing
+jest/
+
+# Storybook files
+.storybook/
+dist-storybook/
+
+# Webpack files
+.cache/
+
+# React Native specific
+.expo/
+.expo-shared/
+
