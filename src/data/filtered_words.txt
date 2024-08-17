@@ -2812,7 +2812,7 @@ delimitors
 deliniate
 delinks
 delirium
-deLonghi
+demagogue
 demagoguery
 demangler
 demangles
@@ -2821,6 +2821,7 @@ demeanor
 demo
 demodulated
 demodulates
+demonstrative
 demonstratively
 demotion
 demultiplexor
@@ -3231,7 +3232,7 @@ exchangers
 excised
 excitation
 exclusives
-excreta
+excrete
 excreted
 executability
 exempt
@@ -3249,6 +3250,7 @@ exotically
 expansionist
 expedients
 expensiveness
+explicate
 explicated
 explicates
 explicating
@@ -3261,7 +3263,7 @@ expositions
 expressively
 expunging
 extorting
-extracate
+extricate
 extracurricular
 extramural
 extrapolations
@@ -3573,6 +3575,7 @@ gaol
 gap
 gaping
 gapless
+gapped
 gapping
 gaps
 garage
