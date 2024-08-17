@@ -1,8 +1,10 @@
+import { Die } from '../models/Die';
+
 export class LetterShuffler {
   private shuffledBoard: string[][]; // This is brittle, I want fixed length string
   private boardSize: number;
 
-  public LetterShuffler(boardSize: number) {
+  constructor(boardSize: number) {
     this.shuffledBoard = [];
     for (let i = 0; i < boardSize; i++) {
       this.shuffledBoard.push([]);
@@ -13,7 +15,7 @@ export class LetterShuffler {
     this.boardSize = boardSize;
   }
 
-  private shuffle() {
+  public shuffle() {
     const dice: Die[] = Die.getDice(this.boardSize);
 
     const shuffledDice: Die[] = this.shuffleDice(dice);
@@ -24,6 +26,8 @@ export class LetterShuffler {
       this.setCharacter(i, letter);
       i++;
     }
+
+    return this.shuffledBoard;
   }
 
   // Copied from internet

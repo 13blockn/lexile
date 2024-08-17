@@ -1,4 +1,4 @@
-class Die {
+export class Die {
   public static readonly DIE0 = new Die("QBZJXK");
   public static readonly DIE1 = new Die("HHLRDO");
   public static readonly DIE2 = new Die("TELPCI");

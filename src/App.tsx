@@ -2,9 +2,16 @@ import { useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
+import { LetterShuffler } from './algorithm/LetterShuffler'
+import { Board } from './models/Board'
 
 function App() {
   const [count, setCount] = useState(0)
+
+  const letterShuffler = new LetterShuffler(5);
+  const letters = letterShuffler.shuffle();
+  const board = new Board(letters);
+  board.printLetters();
 
   return (
     <>
