@@ -1,17 +1,18 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
 import { LetterShuffler } from './algorithm/LetterShuffler'
-import { Board } from './models/Board'
+import Board from './Board'
 
 function App() {
-  const [count, setCount] = useState(0)
-
   const letterShuffler = new LetterShuffler(5);
-  const letters = letterShuffler.shuffle();
-  const board = new Board(letters);
-  board.printLetters();
+  const [letters, setLetters] = useState<string[][]>(letterShuffler.shuffle());
+
+  // Shuffle the board and update the state
+  const shuffleBoard = useCallback(() => {
+    setLetters(letterShuffler.shuffle());
+  }, [letterShuffler]);
 
   return (
     <>
@@ -25,18 +26,13 @@ function App() {
       </div>
       <h1>Vite + React</h1>
       <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
+        <Board board={letters} />
+        <button onClick={shuffleBoard}>
+          Shuffle board
         </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
     </>
-  )
+  );
 }
 
-export default App
+export default App;

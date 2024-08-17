@@ -45,7 +45,7 @@ export class LetterShuffler {
 
   private setCharacter(index: number, letter: string) {
     const column = index % this.boardSize;
-    const row = index / this.boardSize;
+    const row = Math.floor(index / this.boardSize);
     this.shuffledBoard[row][column] = letter;
   }
 }
