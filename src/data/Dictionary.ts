@@ -1,24 +1,27 @@
 import { Trie } from "./Trie";
-import * as fs from 'fs';
-import * as readline from 'readline';
+import * as fs from "fs";
+import * as readline from "readline";
 
 export class Dictionary {
   private trie: Trie;
 
   constructor() {
-    //this.trie = Trie.buildTrie([]); // Can I afford to not initialize within the constructor?
+    this.trie = Trie.buildTrie([]); // Can I afford to not initialize within the constructor?
+    Promise.resolve(this.init()); // TODO: Properly initialize the tree asynchronously
   }
 
-  async init(filePath: string): Promise<void> {
+  async init(): Promise<void> {
+    const filePath = "./filtered_words.txt";
     const wordList = await this.loadWordsFromFile(filePath);
     this.trie = Trie.buildTrie(wordList);
   }
 
+  // This doesn't work because I don't have access to the file system. Hate this for me
   private async loadWordsFromFile(filePath: string): Promise<string[]> {
     const fileStream = fs.createReadStream(filePath);
     const rl = readline.createInterface({
       input: fileStream,
-      crlfDelay: Infinity
+      crlfDelay: Infinity,
     });
 
     const wordList: string[] = [];

@@ -4,10 +4,21 @@ import viteLogo from '/vite.svg'
 import './App.css'
 import { LetterShuffler } from './algorithm/LetterShuffler'
 import Board from './Board'
+import { Board as BoardModel } from './models/Board';
+import { PuzzleSolver } from './algorithm/PuzzleSolver'
+import { MoveValidator } from './algorithm/MoveValidator'
 
 function App() {
   const letterShuffler = new LetterShuffler(5);
   const [letters, setLetters] = useState<string[][]>(letterShuffler.shuffle());
+
+  const board = new BoardModel(letters);
+  const moveValidator = new MoveValidator(board);
+  const puzzleSolver = new PuzzleSolver(moveValidator);
+  puzzleSolver.searchBoard(board);
+  puzzleSolver.getWords().forEach((wordString: string) => {
+    console.log(wordString);
+  })
 
   // Shuffle the board and update the state
   const shuffleBoard = useCallback(() => {
