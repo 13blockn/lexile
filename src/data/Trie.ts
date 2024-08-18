@@ -68,11 +68,9 @@ export class Trie {
       return true;
     }
 
-    //console.log(`prefix at 0 is ${prefix[0]}`)
     const subTrie = this.hasChar(prefix[0]);
     // No valid matches left in dictionary, must not be a prefix
     if (subTrie === null) {
-      //console.log(`No valid prefixes for ${prefix}, subtrie: ${subTrie}`)
       return false;
     }
 
@@ -86,7 +84,6 @@ export class Trie {
       this.makeEnd();
       return;
     }
-    //console.log(`adding word ${word}`);
 
     const subTrie = this.hasChar(word[0]);
     if (subTrie !== null) {
@@ -161,15 +158,12 @@ export class TrieTwo {
 
   startsWith(prefix: string): boolean {
     let node = this.root;
-    //console.log(JSON.stringify(node));
     for (const char of prefix) {
-      // Might need to check for if it's end of word, but hopefully that will be covered by the basic
       if (!node.children[char]) {
         return false;
       }
       node = node.children[char];
     }
-    //console.log(`found prefix ${prefix}`);
     return true;
   }
 }

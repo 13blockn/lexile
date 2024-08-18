@@ -8,6 +8,10 @@ export class Coordinate {
     this.yCoord = yCoord;
     this.status = Status.UNVISITED;
   }
+
+  equals(otherCoord: Coordinate) {
+    return this.xCoord === otherCoord.xCoord && this.yCoord === otherCoord.yCoord;
+  }
 }
 
 export enum Status {

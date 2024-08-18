@@ -1,4 +1,4 @@
-import { Coordinate } from "./Coordinate";
+import { Coordinate, Status } from "./Coordinate";
 
 const UNSET: Coordinate = new Coordinate(-1, -1);
 export class Word {
@@ -18,6 +18,7 @@ export class Word {
 
   // No validation here yet
   appendCharacter(coord: Coordinate): void {
+    coord.status = Status.VISITED; // Could have uninteded consequences
     this.path.push(coord);
     this.endPoint = coord;
   }

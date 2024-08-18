@@ -29,7 +29,7 @@ export class MoveValidator {
 
   public isUnvisited(tileLocation: Coordinate, word: Word): boolean {
     for (const coordinate of word.path) {
-      if (coordinate === tileLocation) {
+      if (coordinate.equals(tileLocation)) {
         return false;
       }
     }

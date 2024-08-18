@@ -21,8 +21,9 @@ function App() {
       console.log('Use effect triggered');
       try {
         // This loads in the words to the application
-        const response = await fetch('./words.txt');
-        //const response = await fetch('./test_words.txt');
+        const response = await fetch('./Dictionary');
+        //const response = await fetch('./words.txt'); // Middle ground dictionary for speed
+        //const response = await fetch('./test_words.txt'); // Use for testing
         const text = await response.text();
         const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
         puzzleSolver = new PuzzleSolver(moveValidator, lines);

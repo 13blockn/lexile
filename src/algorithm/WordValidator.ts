@@ -15,10 +15,6 @@ export class WordValidator {
       return false;
     }
 
-    if (this.dictionary.isPrefix(input)) {
-      //console.log(`Found prefix for ${input}`);
-    }
-
     return this.dictionary.isPrefix(input);
   }
 
@@ -30,7 +26,6 @@ export class WordValidator {
 
     // Shouldn't need to check if word is already in the dictionary because it is a set
     if (this.dictionary.lookup(input)) {
-      //console.log(`Found word! ${input}`);
       this.words.add(input);
       return true;
     }
