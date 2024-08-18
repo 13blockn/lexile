@@ -4,24 +4,25 @@ export class WordValidator {
   private dictionary: Dictionary;
   private words: Set<string>;
   // private prefix: Prefix;
-  constructor() {
-    this.dictionary = new Dictionary();
+  constructor(wordList: string[]) {
+    this.dictionary = new Dictionary(wordList);
     this.words = new Set();
   }
 
-  public async initializeDictionary() {
-    await this.dictionary.init();
-  }
 
   public checkPrefix(input: string): boolean {
     if (input.length === 0) {
       return false;
     }
 
-    return this.dictionary.lookup(input);
+    if (this.dictionary.isPrefix(input)) {
+      //console.log(`Found prefix for ${input}`);
+    }
+
+    return this.dictionary.isPrefix(input);
   }
 
-  public check(input: string): boolean {
+  public checkAndAddToSolution(input: string): boolean {
     // Words must be longer than 2 letters
     if (input.length < 3) {
       return false;
@@ -29,7 +30,7 @@ export class WordValidator {
 
     // Shouldn't need to check if word is already in the dictionary because it is a set
     if (this.dictionary.lookup(input)) {
-      console.log(`Found word! ${input}`);
+      //console.log(`Found word! ${input}`);
       this.words.add(input);
       return true;
     }

@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
@@ -14,11 +14,29 @@ function App() {
 
   const board = new BoardModel(letters);
   const moveValidator = new MoveValidator(board);
-  const puzzleSolver = new PuzzleSolver(moveValidator);
-  puzzleSolver.searchBoard(board);
-  puzzleSolver.getWords().forEach((wordString: string) => {
-    console.log(wordString);
-  })
+  let puzzleSolver;
+
+  useEffect(() => {
+    const loadTextFile = async () => {
+      console.log('Use effect triggered');
+      try {
+        // This loads in the words to the application
+        const response = await fetch('./words.txt');
+        //const response = await fetch('./test_words.txt');
+        const text = await response.text();
+        const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+        puzzleSolver = new PuzzleSolver(moveValidator, lines);
+        puzzleSolver.searchBoard(board);
+        puzzleSolver.getWords().forEach((wordString: string) => {
+          console.log(wordString);
+        });
+      } catch (error) {
+        console.error('Error loading the text file:', error);
+      }
+    };
+
+    loadTextFile();
+  }, []);
 
   // Shuffle the board and update the state
   const shuffleBoard = useCallback(() => {

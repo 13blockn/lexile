@@ -9,10 +9,11 @@ export class Word {
   constructor(word?: Word) {
     if (word) {
       this.endPoint = word.endPoint;
-      this.path = word.path;
+      this.path = word.path.map(coord => new Coordinate(coord.xCoord, coord.yCoord));
+    } else {
+      this.endPoint = UNSET;
+      this.path = [];
     }
-    this.endPoint = UNSET;
-    this.path = [];
   }
 
   // No validation here yet
