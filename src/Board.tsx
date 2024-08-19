@@ -1,7 +1,7 @@
-import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
-import { WordValidator } from './algorithm/WordValidator';
-import { Board as BoardModel } from './models/Board';
-import './Board.css';
+import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { WordValidator } from "./algorithm/WordValidator";
+import { Board as BoardModel } from "./models/Board";
+import "./Board.css";
 
 interface BoardProps {
   board: BoardModel;
@@ -10,67 +10,80 @@ interface BoardProps {
 }
 
 // WordValidator is undefined
-const Board: React.FC<BoardProps> = ({ board, wordValidator, setUserWords }) => {
-  const [highlightedCells, setHighlightedCells] = useState<{ row: number, col: number }[]>([]);
+const Board: React.FC<BoardProps> = ({
+  board,
+  wordValidator,
+  setUserWords,
+}) => {
+  const [highlightedCells, setHighlightedCells] = useState<
+    { row: number; col: number }[]
+  >([]);
 
   const boardLetters = board.getLetters();
   const boardSize = boardLetters.length;
 
-  const handlePointerEnter = (row: number, col: number, event: React.PointerEvent<HTMLDivElement>) => {
+  const handlePointerEnter = (
+    row: number,
+    col: number,
+    event: React.PointerEvent<HTMLDivElement>
+  ) => {
     setHighlightedCells((prev) => {
       if (prev.length < 2) {
-        (event.target as HTMLDivElement).classList.add('highlight');
+        (event.target as HTMLDivElement).classList.add("highlight");
         return [...prev, { row, col }];
       }
       const lastCell = prev[prev.length - 2];
-  
+
       // Check if the newly entered cell is the last one in the list (backtracking)
       if (lastCell && lastCell.row === row && lastCell.col === col) {
         // Remove the last cell (backtracking)
         const prevCell = prev[prev.length - 1];
-        const cellElement = document.querySelector(`.board-cell[data-row='${prevCell.row}'][data-col='${prevCell.col}']`);
+        const cellElement = document.querySelector(
+          `.board-cell[data-row='${prevCell.row}'][data-col='${prevCell.col}']`
+        );
         if (cellElement) {
-          cellElement.classList.remove('highlight');
+          cellElement.classList.remove("highlight");
         }
         return prev.slice(0, -1);
       } else {
         // Add the new cell to the highlighted list
-        (event.target as HTMLDivElement).classList.add('highlight');
+        (event.target as HTMLDivElement).classList.add("highlight");
         return [...prev, { row, col }];
       }
     });
   };
 
-  const handlePointerLeave = (row: number, col: number) => {
-  };
+  const handlePointerLeave = (row: number, col: number) => {};
 
   const handleKeyDown = (event: KeyboardEvent) => {
-    if (event.key === 'Enter') {
-      const highlightedLetters = highlightedCells.map(cell => boardLetters[cell.row][cell.col]);
-      const highlightedWord = highlightedLetters.join('');
+    if (event.key === "Enter") {
+      const highlightedLetters = highlightedCells.map(
+        (cell) => boardLetters[cell.row][cell.col]
+      );
+      const highlightedWord = highlightedLetters.join("");
       const isValidWord = wordValidator.check(highlightedWord);
       // Need to prevent double submits
       if (isValidWord) {
         setUserWords((prev) => {
           console.log(prev);
           if (!prev.includes(highlightedWord)) {
-            return [...prev, highlightedWord]
+            return [...prev, highlightedWord];
           }
           return prev;
         });
       }
 
-      document.querySelectorAll('.highlight').forEach((element) => {
-        element.classList.remove('highlight');
+      document.querySelectorAll(".highlight").forEach((element) => {
+        element.classList.remove("highlight");
       });
       setHighlightedCells([]);
     }
   };
 
   useEffect(() => {
-    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener("keydown", handleKeyDown);
     };
   }, [highlightedCells]);
 
@@ -85,21 +98,30 @@ const Board: React.FC<BoardProps> = ({ board, wordValidator, setUserWords }) => 
                 className={`board-cell`}
                 data-row={rowIndex}
                 data-col={colIndex}
-                onPointerEnter={(event) => handlePointerEnter(rowIndex, colIndex, event)}
-                onPointerLeave={() => handlePointerLeave(rowIndex, colIndex)}
               >
-                <div className='board-text'>
+                <div
+                  className="board-text"
+                  data-row={rowIndex}
+                  data-col={colIndex}
+                  onPointerEnter={(event) =>
+                    handlePointerEnter(rowIndex, colIndex, event)
+                  }
+                  onPointerLeave={() => handlePointerLeave(rowIndex, colIndex)}
+                >
                   {boardLetters[rowIndex][colIndex]}
                 </div>
-                </div>
+              </div>
             ))}
           </div>
         ))}
       </div>
       <div>
-        Input: {highlightedCells.map((cell) => {
-          return boardLetters[cell.row][cell.col];
-        }).join('')}
+        Input:{" "}
+        {highlightedCells
+          .map((cell) => {
+            return boardLetters[cell.row][cell.col];
+          })
+          .join("")}
       </div>
     </>
   );
