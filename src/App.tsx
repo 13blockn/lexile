@@ -6,6 +6,9 @@ import { Board as BoardModel } from "./models/Board";
 import { PuzzleSolver } from "./algorithm/PuzzleSolver";
 import { MoveValidator } from "./algorithm/MoveValidator";
 import { WordValidator } from "./algorithm/WordValidator";
+import Button from "@mui/material/Button";
+import Popover from "@mui/material/Popover";
+import Typography from "@mui/material/Typography";
 
 function App() {
   const letterShuffler = new LetterShuffler(5);
@@ -15,6 +18,7 @@ function App() {
     null
   );
   const [userWords, setUserWords] = useState<string[]>([]);
+  const [modalOpen, setModalOpen] = useState(false);
 
   const board = new BoardModel(letters);
   const moveValidator = new MoveValidator(board);
@@ -52,18 +56,46 @@ function App() {
   // Shuffle the board and update the state
   const shuffleBoard = useCallback(() => {
     setLetters(letterShuffler.shuffle());
-    setUserWords([]); // For some reason, using setUserWords in lower
+    setUserWords([]); // For some reason, using setUserWords causes everything to break.
   }, [letterShuffler]);
 
-  useEffect(() => {
-    // This will run whenever userWords changes
-    console.log("User words updated:", userWords);
-  }, [userWords]);
-
   return (
-    <>
+    <div
+      style={{
+        backgroundColor: modalOpen ? "rgba(0,0,0,0.3)" : "transparent",
+        transition: "background-color 0.3s ease",
+      }}
+    >
       <h1>Lexile</h1>
-      <div style={{ display: 'flex', flexDirection: 'row' }}>
+      <Button
+        aria-describedby={"rules-button"}
+        variant="contained"
+        onClick={() => setModalOpen(true)}
+      >
+        Learn how to play!
+      </Button>
+      <Popover
+        id={"rules-modal"}
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        anchorOrigin={{
+          vertical: "center",
+          horizontal: "center",
+        }}
+        transformOrigin={{
+          vertical: "center",
+          horizontal: "center",
+        }}
+      >
+        <Typography sx={{ p: 2 }}>
+          Welcome to Lexile, the daily word search game. <br />
+          This game is similar to Boggle, where you have a board filled with
+          letters. <br />
+          You can connect letters in any direction, but you cannot use the same
+          letter twice
+        </Typography>
+      </Popover>
+      <div style={{ display: "flex", flexDirection: "row" }}>
         {wordValidator && (
           <div className="card">
             <Board
@@ -78,12 +110,11 @@ function App() {
         <div>
           <h3>Your Words</h3>
           {userWords.map((word, index) => {
-            console.log(word);
-          return <div key={index} >{word}</div>
-})}
+            return <div key={index}>{word}</div>;
+          })}
         </div>
       </div>
-    </>
+    </div>
   );
 }
 

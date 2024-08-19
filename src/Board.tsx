@@ -35,11 +35,8 @@ const Board: React.FC<BoardProps> = ({
       return;
     }
     setHighlightedCells((prev) => {
-      if (prev.length < 2) {
-        highlightCell(row, col);
-        return [...prev, { row, col }];
-      }
-      const lastCell = prev[prev.length - 2];
+      const prevCell = prev[prev.length - 1]; // Check for most recent square so you don't enter twice
+      const lastCell = prev[prev.length - 2]; // Check for previous location to allow backtracking
 
       // Check if the newly entered cell is the last one in the list (backtracking)
       if (lastCell && lastCell.row === row && lastCell.col === col) {
@@ -52,8 +49,21 @@ const Board: React.FC<BoardProps> = ({
           cellElement.classList.remove("highlight");
         }
         return prev.slice(0, -1);
+      } else if (prevCell && prevCell.row === row && prevCell.col === col) {
+        return prev;
       } else {
         // Add the new cell to the highlighted list
+        // TODO: Don't highlight already visited if visited. Below doesn't work, not debugged
+        highlightedCells.forEach(cell => {
+          if (cell.row === row && cell.col === col) {
+            return prev;
+          }
+        });
+
+        // Go this way once I use Coordinate and have the equals function
+        // if (highlightedCells.includes({row, col})) {
+        //   return prev;
+        // }
         highlightCell(row, col);
         return [...prev, { row, col }];
       }
