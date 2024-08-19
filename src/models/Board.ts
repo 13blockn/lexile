@@ -57,6 +57,10 @@ export class Board {
     this.neighbors.set(this.getCoordinate(letter, xCoord, yCoord), edges);
   }
 
+  public getLetters(): string[][] {
+    return this.letters;
+  }
+
   public getTileLocations(letter: string): Coordinate[] {
     return this.locations.get(letter) || [];
   }

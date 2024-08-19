@@ -8,8 +8,8 @@ export class PuzzleSolver {
   private moveValidator: MoveValidator;
   private iterations: number; // Used for tracking efficiency of solver
 
-  constructor(moveValidator: MoveValidator, wordList: string[]) {
-    this.wordValidator = new WordValidator(wordList);
+  constructor(moveValidator: MoveValidator, wordValidator: WordValidator) {
+    this.wordValidator = wordValidator;
     this.moveValidator = moveValidator;
     this.iterations = 0;
   }

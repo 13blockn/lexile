@@ -18,6 +18,10 @@ export class WordValidator {
     return this.dictionary.isPrefix(input);
   }
 
+  public check(input: string): boolean {
+    return this.words.has(input);
+  }
+
   public checkAndAddToSolution(input: string): boolean {
     // Words must be longer than 2 letters
     if (input.length < 3) {

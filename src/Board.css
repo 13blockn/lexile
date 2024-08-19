@@ -1,0 +1,19 @@
+.board {
+  display: flex;
+  flex-direction: column;
+}
+
+.board-row {
+  display: flex;
+}
+
+.board-cell {
+  width: 100px;
+  height: 100px;
+  border: 1px solid #ddd;
+  font-size: 48px;
+}
+
+.board-cell.highlight {
+  background-color: lightblue;
+}
