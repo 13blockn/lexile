@@ -18,18 +18,25 @@ const Board: React.FC<BoardProps> = ({
   const [highlightedCells, setHighlightedCells] = useState<
     { row: number; col: number }[]
   >([]);
+  const [isSearching, setIsSearching] = useState(false);
 
   const boardLetters = board.getLetters();
   const boardSize = boardLetters.length;
 
-  const handlePointerEnter = (
-    row: number,
-    col: number,
-    event: React.PointerEvent<HTMLDivElement>
-  ) => {
+  const startSearch = (row: number, col: number) => {
+    setIsSearching(true);
+    highlightCell(row, col);
+    setHighlightedCells([{ row, col }]);
+  };
+
+  const handlePointerEnter = (row: number, col: number) => {
+    if (!isSearching) {
+      // Do nothing if we're not in search mode
+      return;
+    }
     setHighlightedCells((prev) => {
       if (prev.length < 2) {
-        (event.target as HTMLDivElement).classList.add("highlight");
+        highlightCell(row, col);
         return [...prev, { row, col }];
       }
       const lastCell = prev[prev.length - 2];
@@ -47,10 +54,20 @@ const Board: React.FC<BoardProps> = ({
         return prev.slice(0, -1);
       } else {
         // Add the new cell to the highlighted list
-        (event.target as HTMLDivElement).classList.add("highlight");
+        highlightCell(row, col);
         return [...prev, { row, col }];
       }
     });
+  };
+
+  // Need a special function for highlighting cells because the mouse event happens on the child element
+  const highlightCell = (row: number, col: number) => {
+    const cellElement = document.querySelector(
+      `.board-cell[data-row='${row}'][data-col='${col}']`
+    );
+    if (cellElement) {
+      cellElement.classList.add("highlight");
+    }
   };
 
   const handlePointerLeave = (row: number, col: number) => {};
@@ -77,6 +94,7 @@ const Board: React.FC<BoardProps> = ({
         element.classList.remove("highlight");
       });
       setHighlightedCells([]);
+      setIsSearching(false);
     }
   };
 
@@ -103,10 +121,9 @@ const Board: React.FC<BoardProps> = ({
                   className="board-text"
                   data-row={rowIndex}
                   data-col={colIndex}
-                  onPointerEnter={(event) =>
-                    handlePointerEnter(rowIndex, colIndex, event)
-                  }
+                  onPointerEnter={() => handlePointerEnter(rowIndex, colIndex)}
                   onPointerLeave={() => handlePointerLeave(rowIndex, colIndex)}
+                  onClick={() => startSearch(rowIndex, colIndex)}
                 >
                   {boardLetters[rowIndex][colIndex]}
                 </div>
