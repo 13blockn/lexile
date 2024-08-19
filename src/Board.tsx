@@ -80,8 +80,6 @@ const Board: React.FC<BoardProps> = ({
     }
   };
 
-  const handlePointerLeave = (row: number, col: number) => {};
-
   const handleKeyDown = (event: KeyboardEvent) => {
     if (event.key === "Enter") {
       const highlightedLetters = highlightedCells.map(
@@ -132,7 +130,6 @@ const Board: React.FC<BoardProps> = ({
                   data-row={rowIndex}
                   data-col={colIndex}
                   onPointerEnter={() => handlePointerEnter(rowIndex, colIndex)}
-                  onPointerLeave={() => handlePointerLeave(rowIndex, colIndex)}
                   onClick={() => startSearch(rowIndex, colIndex)}
                 >
                   {boardLetters[rowIndex][colIndex]}

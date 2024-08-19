@@ -1,4 +1,4 @@
-import { Trie, TrieTwo } from "./Trie";
+import { TrieTwo } from "./Trie";
 // import * as fs from "fs";
 // import * as readline from "readline";
 

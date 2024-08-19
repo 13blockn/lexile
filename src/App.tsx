@@ -46,7 +46,6 @@ function App() {
         setWords(puzzleSolver.getWords().size);
       } catch (error) {
         console.error("Error loading the text file:", error);
-      } finally {
       }
     };
 
