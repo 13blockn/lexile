@@ -139,14 +139,6 @@ const Board: React.FC<BoardProps> = ({
           </div>
         ))}
       </div>
-      <div>
-        Input:{" "}
-        {highlightedCells
-          .map((cell) => {
-            return boardLetters[cell.row][cell.col];
-          })
-          .join("")}
-      </div>
     </>
   );
 };

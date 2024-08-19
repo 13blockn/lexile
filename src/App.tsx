@@ -9,6 +9,7 @@ import { WordValidator } from "./algorithm/WordValidator";
 import Button from "@mui/material/Button";
 import Popover from "@mui/material/Popover";
 import Typography from "@mui/material/Typography";
+import EndScreen from "./EndScreen";
 
 function App() {
   const letterShuffler = new LetterShuffler(5);
@@ -19,6 +20,26 @@ function App() {
   );
   const [userWords, setUserWords] = useState<string[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(180);
+  const [gameOver, setGameOver] = useState(false);
+
+  useEffect(() => {
+    if (timeLeft > 0) {
+      const timer = setInterval(() => {
+        setTimeLeft((prev) => prev - 1);
+      }, 1000);
+
+      return () => clearInterval(timer);
+    } else {
+      setGameOver(true);
+    }
+  }, [timeLeft]);
+
+  const formatTime = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
+  };
 
   const board = new BoardModel(letters);
   const moveValidator = new MoveValidator(board);
@@ -55,8 +76,19 @@ function App() {
   // Shuffle the board and update the state
   const shuffleBoard = useCallback(() => {
     setLetters(letterShuffler.shuffle());
-    setUserWords([]); // For some reason, using setUserWords causes everything to break.
+    //setUserWords([]); // For some reason, using setUserWords causes everything to break.
   }, [letterShuffler]);
+
+  const handleRestart = () => {
+    setTimeLeft(180);
+    setGameOver(false);
+    shuffleBoard();
+    //setUserWords([]);
+  };
+
+  if (gameOver) {
+    return <EndScreen userWords={userWords} totalWords={words} onRestart={handleRestart} />;
+  }
 
   return (
     <div
@@ -65,7 +97,7 @@ function App() {
         transition: "background-color 0.3s ease",
       }}
     >
-      <h1>Lexile</h1>
+      <div className="title">Lexile</div>
       <Button
         aria-describedby={"rules-button"}
         variant="contained"
@@ -91,7 +123,9 @@ function App() {
           This game is similar to Boggle, where you have a board filled with
           letters. <br />
           You can connect letters in any direction, but you cannot use the same
-          letter twice
+          letter twice. <br />
+          To start your word, left click on a letter. From there, you can drag your mouse. <br />
+          When you're ready to submit your word, press enter!
         </Typography>
       </Popover>
       <div style={{ display: "flex", flexDirection: "row" }}>
@@ -103,7 +137,8 @@ function App() {
               setUserWords={setUserWords}
             />
             <button onClick={shuffleBoard}>Shuffle board</button>
-            <h3>Total Words: {words} </h3>
+            <div className="subtitle">Total Words: {words} </div>
+            <div className="subtitle">Time Left: {formatTime(timeLeft)}</div>
           </div>
         )}
         <div>
