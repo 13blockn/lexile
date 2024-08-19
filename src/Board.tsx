@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import { WordValidator } from './algorithm/WordValidator';
 import { Board as BoardModel } from './models/Board';
 import './Board.css';
@@ -6,17 +6,15 @@ import './Board.css';
 interface BoardProps {
   board: BoardModel;
   wordValidator: WordValidator;
+  setUserWords: Dispatch<SetStateAction<string[]>>;
 }
 
 // WordValidator is undefined
-const Board: React.FC<BoardProps> = ({ board, wordValidator }) => {
+const Board: React.FC<BoardProps> = ({ board, wordValidator, setUserWords }) => {
   const [highlightedCells, setHighlightedCells] = useState<{ row: number, col: number }[]>([]);
 
   const boardLetters = board.getLetters();
   const boardSize = boardLetters.length;
-  if (boardLetters.length !== 5 || boardLetters.some(row => row.length !== 5)) {
-    throw new Error('Board must be a 5x5 matrix.');
-  }
 
   const handlePointerEnter = (row: number, col: number, event: React.PointerEvent<HTMLDivElement>) => {
     setHighlightedCells((prev) => {
@@ -49,8 +47,18 @@ const Board: React.FC<BoardProps> = ({ board, wordValidator }) => {
   const handleKeyDown = (event: KeyboardEvent) => {
     if (event.key === 'Enter') {
       const highlightedLetters = highlightedCells.map(cell => boardLetters[cell.row][cell.col]);
-      const isValidWord = wordValidator.check(highlightedLetters.join(''));
-      console.log('Highlighted letters:', highlightedLetters.join(''), isValidWord);
+      const highlightedWord = highlightedLetters.join('');
+      const isValidWord = wordValidator.check(highlightedWord);
+      // Need to prevent double submits
+      if (isValidWord) {
+        setUserWords((prev) => {
+          console.log(prev);
+          if (!prev.includes(highlightedWord)) {
+            return [...prev, highlightedWord]
+          }
+          return prev;
+        });
+      }
 
       document.querySelectorAll('.highlight').forEach((element) => {
         element.classList.remove('highlight');
@@ -67,24 +75,33 @@ const Board: React.FC<BoardProps> = ({ board, wordValidator }) => {
   }, [highlightedCells]);
 
   return (
-    <div className="board">
-      {Array.from({ length: boardSize }).map((_, rowIndex) => (
-        <div key={rowIndex} className="board-row">
-          {Array.from({ length: boardSize }).map((_, colIndex) => (
-            <div
-              key={colIndex}
-              className={`board-cell`}
-              data-row={rowIndex}
-              data-col={colIndex}
-              onPointerEnter={(event) => handlePointerEnter(rowIndex, colIndex, event)}
-              onPointerLeave={() => handlePointerLeave(rowIndex, colIndex)}
-            >
-              {boardLetters[rowIndex][colIndex]}
-              </div>
-          ))}
-        </div>
-      ))}
-    </div>
+    <>
+      <div className="board">
+        {Array.from({ length: boardSize }).map((_, rowIndex) => (
+          <div key={rowIndex} className="board-row">
+            {Array.from({ length: boardSize }).map((_, colIndex) => (
+              <div
+                key={colIndex}
+                className={`board-cell`}
+                data-row={rowIndex}
+                data-col={colIndex}
+                onPointerEnter={(event) => handlePointerEnter(rowIndex, colIndex, event)}
+                onPointerLeave={() => handlePointerLeave(rowIndex, colIndex)}
+              >
+                <div className='board-text'>
+                  {boardLetters[rowIndex][colIndex]}
+                </div>
+                </div>
+            ))}
+          </div>
+        ))}
+      </div>
+      <div>
+        Input: {highlightedCells.map((cell) => {
+          return boardLetters[cell.row][cell.col];
+        }).join('')}
+      </div>
+    </>
   );
 };
 

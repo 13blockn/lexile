@@ -11,7 +11,10 @@ function App() {
   const letterShuffler = new LetterShuffler(5);
   const [letters, setLetters] = useState<string[][]>(letterShuffler.shuffle());
   const [words, setWords] = useState(0);
-  const [wordValidator, setWordValidator] = useState<WordValidator | null>(null);
+  const [wordValidator, setWordValidator] = useState<WordValidator | null>(
+    null
+  );
+  const [userWords, setUserWords] = useState<string[]>([]);
 
   const board = new BoardModel(letters);
   const moveValidator = new MoveValidator(board);
@@ -49,18 +52,37 @@ function App() {
   // Shuffle the board and update the state
   const shuffleBoard = useCallback(() => {
     setLetters(letterShuffler.shuffle());
+    setUserWords([]); // For some reason, using setUserWords in lower
   }, [letterShuffler]);
+
+  useEffect(() => {
+    // This will run whenever userWords changes
+    console.log("User words updated:", userWords);
+  }, [userWords]);
 
   return (
     <>
       <h1>Lexile</h1>
-      {wordValidator && (
-        <div className="card">
-          <Board board={board} wordValidator={wordValidator} />
-          <button onClick={shuffleBoard}>Shuffle board</button>
-          <h3>Total Words: {words} </h3>
+      <div style={{ display: 'flex', flexDirection: 'row' }}>
+        {wordValidator && (
+          <div className="card">
+            <Board
+              board={board}
+              wordValidator={wordValidator}
+              setUserWords={setUserWords}
+            />
+            <button onClick={shuffleBoard}>Shuffle board</button>
+            <h3>Total Words: {words} </h3>
+          </div>
+        )}
+        <div>
+          <h3>Your Words</h3>
+          {userWords.map((word, index) => {
+            console.log(word);
+          return <div key={index} >{word}</div>
+})}
         </div>
-      )}
+      </div>
     </>
   );
 }

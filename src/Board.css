@@ -11,7 +11,15 @@
   width: 100px;
   height: 100px;
   border: 1px solid #ddd;
-  font-size: 48px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* margin: 16px; */
+  /*font-size: 48px;*/
+}
+
+.board-text {
+  margin: 24px;
 }
 
 .board-cell.highlight {
