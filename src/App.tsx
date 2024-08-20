@@ -22,6 +22,8 @@ function App() {
   const [modalOpen, setModalOpen] = useState(false);
   const [timeLeft, setTimeLeft] = useState(360); // Set back to 180
   const [gameOver, setGameOver] = useState(false);
+  const [board, setBoard] = useState<BoardModel | null>();
+  const [moveValidator, setMoveValidator] = useState<MoveValidator>();
 
   useEffect(() => {
     if (timeLeft > 0) {
@@ -41,9 +43,8 @@ function App() {
     return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
   };
 
-  const board = new BoardModel(letters);
-  const moveValidator = new MoveValidator(board);
   let puzzleSolver;
+  let lines: string[] = [];
 
   useEffect(() => {
     const loadTextFile = async () => {
@@ -53,18 +54,10 @@ function App() {
         //const response = await fetch('./words.txt'); // Middle ground dictionary for speed
         //const response = await fetch('./test_words.txt'); // Use for testing
         const text = await response.text();
-        const lines = text
+        lines = text
           .split("\n")
           .map((line) => line.trim())
           .filter((line) => line.length > 0);
-        const tempWordValidator = new WordValidator(lines);
-        puzzleSolver = new PuzzleSolver(moveValidator, tempWordValidator);
-        setWordValidator(tempWordValidator);
-        puzzleSolver.searchBoard(board);
-        puzzleSolver.getWords().forEach((wordString: string) => {
-          console.log(wordString);
-        });
-        setWords(puzzleSolver.getWords().size);
       } catch (error) {
         console.error("Error loading the text file:", error);
       }
@@ -73,17 +66,35 @@ function App() {
     loadTextFile();
   }, []);
 
+  useEffect(() => {
+    if (!lines) {
+      console.log('dont create word validator before lines are initialized');
+      return;
+    }
+    setBoard(new BoardModel(letters));
+    // Board is always set after setBoard is called
+    setMoveValidator(new MoveValidator(board!));
+    const tempWordValidator = new WordValidator(lines);
+    // MoveValidator is always set after setMoveValidator is called
+    puzzleSolver = new PuzzleSolver(moveValidator!, tempWordValidator);
+    setWordValidator(tempWordValidator);
+    puzzleSolver.searchBoard(board!);
+    puzzleSolver.getWords().forEach((wordString: string) => {
+      console.log(wordString);
+    });
+    setWords(puzzleSolver.getWords().size);
+  }, [letters]);
+
   // Shuffle the board and update the state
   const shuffleBoard = useCallback(() => {
     setLetters(letterShuffler.shuffle());
-    //setUserWords([]); // For some reason, using setUserWords causes everything to break.
+    setTimeLeft(180);
+    setUserWords([]);
   }, [letterShuffler]);
 
   const handleRestart = () => {
-    setTimeLeft(180);
     setGameOver(false);
     shuffleBoard();
-    //setUserWords([]);
   };
 
   if (gameOver) {
@@ -129,7 +140,7 @@ function App() {
         </Typography>
       </Popover>
       <div style={{ display: "flex", flexDirection: "row" }}>
-        {wordValidator && (
+        {wordValidator && board && (
           <div className="card">
             <Board
               board={board}

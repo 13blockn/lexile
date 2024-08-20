@@ -105,7 +105,7 @@ const Board: React.FC<BoardProps> = ({
       (cell) => boardLetters[cell.row][cell.col]
     );
     const highlightedWord = highlightedLetters.join("");
-    const isValidWord = wordValidator.check(highlightedWord);
+    const isValidWord = wordValidator.check(highlightedWord); // I need to refresh the word validator on restart
     // Need to prevent double submits
     if (isValidWord) {
       setUserWords((prev) => {
