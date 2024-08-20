@@ -20,7 +20,7 @@ function App() {
   );
   const [userWords, setUserWords] = useState<string[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(180);
+  const [timeLeft, setTimeLeft] = useState(360); // Set back to 180
   const [gameOver, setGameOver] = useState(false);
 
   useEffect(() => {

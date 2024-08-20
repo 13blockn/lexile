@@ -9,6 +9,12 @@ interface BoardProps {
   setUserWords: Dispatch<SetStateAction<string[]>>;
 }
 
+enum SubmissionMethod {
+  SWIPE,
+  ENTER,
+  CLICK
+}
+
 // WordValidator is undefined
 const Board: React.FC<BoardProps> = ({
   board,
@@ -19,18 +25,25 @@ const Board: React.FC<BoardProps> = ({
     { row: number; col: number }[]
   >([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [submissionMethod, setSubmissionMethod] = useState<SubmissionMethod | null>();
 
   const boardLetters = board.getLetters();
   const boardSize = boardLetters.length;
 
-  const startSearch = (row: number, col: number) => {
+  const handleTileClick = (row: number, col: number) => {
+    if (isSearching) {
+      setSubmissionMethod(SubmissionMethod.CLICK);
+      submitWord();
+      return;
+    }
     setIsSearching(true);
+    setSubmissionMethod(null);
     highlightCell(row, col);
     setHighlightedCells([{ row, col }]);
   };
 
   const handlePointerEnter = (row: number, col: number) => {
-    if (!isSearching) {
+    if (!isSearching || submissionMethod === SubmissionMethod.CLICK) {
       // Do nothing if we're not in search mode
       return;
     }
@@ -82,29 +95,33 @@ const Board: React.FC<BoardProps> = ({
 
   const handleKeyDown = (event: KeyboardEvent) => {
     if (event.key === "Enter") {
-      const highlightedLetters = highlightedCells.map(
-        (cell) => boardLetters[cell.row][cell.col]
-      );
-      const highlightedWord = highlightedLetters.join("");
-      const isValidWord = wordValidator.check(highlightedWord);
-      // Need to prevent double submits
-      if (isValidWord) {
-        setUserWords((prev) => {
-          console.log(prev);
-          if (!prev.includes(highlightedWord)) {
-            return [...prev, highlightedWord];
-          }
-          return prev;
-        });
-      }
-
-      document.querySelectorAll(".highlight").forEach((element) => {
-        element.classList.remove("highlight");
-      });
-      setHighlightedCells([]);
-      setIsSearching(false);
+      submitWord();
+      setSubmissionMethod(SubmissionMethod.ENTER);
     }
   };
+
+  const submitWord = () => {
+    const highlightedLetters = highlightedCells.map(
+      (cell) => boardLetters[cell.row][cell.col]
+    );
+    const highlightedWord = highlightedLetters.join("");
+    const isValidWord = wordValidator.check(highlightedWord);
+    // Need to prevent double submits
+    if (isValidWord) {
+      setUserWords((prev) => {
+        if (!prev.includes(highlightedWord)) {
+          return [...prev, highlightedWord];
+        }
+        return prev;
+      });
+    }
+
+    document.querySelectorAll(".highlight").forEach((element) => {
+      element.classList.remove("highlight");
+    });
+    setHighlightedCells([]);
+    setIsSearching(false);
+  }
 
   useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
@@ -130,7 +147,7 @@ const Board: React.FC<BoardProps> = ({
                   data-row={rowIndex}
                   data-col={colIndex}
                   onPointerEnter={() => handlePointerEnter(rowIndex, colIndex)}
-                  onClick={() => startSearch(rowIndex, colIndex)}
+                  onClick={() => handleTileClick(rowIndex, colIndex)}
                 >
                   {boardLetters[rowIndex][colIndex]}
                 </div>
