@@ -20,13 +20,16 @@ function App() {
   );
   const [userWords, setUserWords] = useState<string[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(360); // Set back to 180
+  const [timeLeft, setTimeLeft] = useState(180);
   const [gameOver, setGameOver] = useState(false);
   const [board, setBoard] = useState<BoardModel | null>();
   const [moveValidator, setMoveValidator] = useState<MoveValidator>();
   const [dictionary, setDictionary] = useState<string[]>([]);
 
   useEffect(() => {
+    if (modalOpen) {
+      return; // Do nothing if the modal is open, effectively pausing the timer
+    }
     if (timeLeft > 0) {
       const timer = setInterval(() => {
         setTimeLeft((prev) => prev - 1);
@@ -36,7 +39,7 @@ function App() {
     } else {
       setGameOver(true);
     }
-  }, [timeLeft]);
+  }, [timeLeft, modalOpen]);
 
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
