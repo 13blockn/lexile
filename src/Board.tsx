@@ -2,17 +2,20 @@ import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { WordValidator } from "./algorithm/WordValidator";
 import { Board as BoardModel } from "./models/Board";
 import "./Board.css";
+import { MoveValidator } from "./algorithm/MoveValidator";
+import { Coordinate } from "./models/Coordinate";
 
 interface BoardProps {
   board: BoardModel;
   wordValidator: WordValidator;
   setUserWords: Dispatch<SetStateAction<string[]>>;
+  moveValidator: MoveValidator;
 }
 
 enum SubmissionMethod {
   SWIPE,
   ENTER,
-  CLICK
+  CLICK,
 }
 
 // WordValidator is undefined
@@ -20,12 +23,12 @@ const Board: React.FC<BoardProps> = ({
   board,
   wordValidator,
   setUserWords,
+  moveValidator,
 }) => {
-  const [highlightedCells, setHighlightedCells] = useState<
-    { row: number; col: number }[]
-  >([]);
+  const [highlightedCells, setHighlightedCells] = useState<Coordinate[]>([]);
   const [isSearching, setIsSearching] = useState(false);
-  const [submissionMethod, setSubmissionMethod] = useState<SubmissionMethod | null>();
+  const [submissionMethod, setSubmissionMethod] =
+    useState<SubmissionMethod | null>();
 
   const boardLetters = board.getLetters();
   const boardSize = boardLetters.length;
@@ -39,7 +42,7 @@ const Board: React.FC<BoardProps> = ({
     setIsSearching(true);
     setSubmissionMethod(null);
     highlightCell(row, col);
-    setHighlightedCells([{ row, col }]);
+    setHighlightedCells([new Coordinate(row, col)]);
   };
 
   const handlePointerEnter = (row: number, col: number) => {
@@ -47,28 +50,31 @@ const Board: React.FC<BoardProps> = ({
       // Do nothing if we're not in search mode
       return;
     }
-    setHighlightedCells((prev) => {
+    setHighlightedCells((prev: Coordinate[]) => {
       const prevCell = prev[prev.length - 1]; // Check for most recent square so you don't enter twice
       const lastCell = prev[prev.length - 2]; // Check for previous location to allow backtracking
+      const newCoord = new Coordinate(row, col);
 
-      // Check if the newly entered cell is the last one in the list (backtracking)
-      if (lastCell && lastCell.row === row && lastCell.col === col) {
-        // Remove the last cell (backtracking)
+      if (!moveValidator.isAdjacent(prevCell, newCoord)) {
+        return prev;
+      } else if (lastCell?.equals(newCoord)) {
+        // Backtracking. Remove the head if we went back to an old tile
         const prevCell = prev[prev.length - 1];
+
         const cellElement = document.querySelector(
-          `.board-cell[data-row='${prevCell.row}'][data-col='${prevCell.col}']`
+          `.board-cell[data-row='${prevCell.xCoord}'][data-col='${prevCell.yCoord}']`
         );
         if (cellElement) {
           cellElement.classList.remove("highlight");
         }
         return prev.slice(0, -1);
-      } else if (prevCell && prevCell.row === row && prevCell.col === col) {
+      } else if (prevCell.equals(newCoord)) {
         return prev;
       } else {
         // Add the new cell to the highlighted list
         // TODO: Don't highlight already visited if visited. Below doesn't work, not debugged
-        highlightedCells.forEach(cell => {
-          if (cell.row === row && cell.col === col) {
+        highlightedCells.forEach((cell) => {
+          if (cell.equals(newCoord)) {
             return prev;
           }
         });
@@ -78,7 +84,7 @@ const Board: React.FC<BoardProps> = ({
         //   return prev;
         // }
         highlightCell(row, col);
-        return [...prev, { row, col }];
+        return [...prev, newCoord];
       }
     });
   };
@@ -102,7 +108,7 @@ const Board: React.FC<BoardProps> = ({
 
   const submitWord = () => {
     const highlightedLetters = highlightedCells.map(
-      (cell) => boardLetters[cell.row][cell.col]
+      (cell) => boardLetters[cell.xCoord][cell.yCoord]
     );
     const highlightedWord = highlightedLetters.join("");
     const isValidWord = wordValidator.check(highlightedWord);
@@ -121,7 +127,7 @@ const Board: React.FC<BoardProps> = ({
     });
     setHighlightedCells([]);
     setIsSearching(false);
-  }
+  };
 
   useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);

@@ -160,12 +160,13 @@ function App() {
         </Typography>
       </Popover>
       <div style={{ display: "flex", flexDirection: "row" }}>
-        {wordValidator && board && (
+        {wordValidator && board && moveValidator && (
           <div className="card">
             <Board
               board={board}
               wordValidator={wordValidator}
               setUserWords={setUserWords}
+              moveValidator={moveValidator}
             />
             <button onClick={shuffleBoard}>Shuffle board</button>
             <div className="subtitle">Total Words: {words} </div>

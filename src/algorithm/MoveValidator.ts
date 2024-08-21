@@ -36,7 +36,7 @@ export class MoveValidator {
     return true;
   }
 
-  private isAdjacent(
+  public isAdjacent(
     currentLocation: Coordinate,
     tileLocation: Coordinate
   ): boolean {
