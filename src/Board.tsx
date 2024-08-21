@@ -155,7 +155,9 @@ const Board: React.FC<BoardProps> = ({
                   onPointerEnter={() => handlePointerEnter(rowIndex, colIndex)}
                   onClick={() => handleTileClick(rowIndex, colIndex)}
                 >
-                  {boardLetters[rowIndex][colIndex]}
+                  {boardLetters[rowIndex][colIndex] === "QU"
+                    ? "Qu"
+                    : boardLetters[rowIndex][colIndex]}{" "}
                 </div>
               </div>
             ))}

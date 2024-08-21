@@ -61,10 +61,11 @@ export class Die {
     }
   }
 
+  // This can return Qu
   public getCharacter(index: number): string {
     if (index < 0 || index >= Die.SIDES) {
       throw new Error('Index out of bounds');
     }
-    return this.letters[index];
+    return this.letters[index] === 'Q' ? 'QU' : this.letters[index];
   }
 }
