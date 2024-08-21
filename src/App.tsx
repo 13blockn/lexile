@@ -14,11 +14,11 @@ import EndScreen from "./EndScreen";
 function App() {
   const letterShuffler = new LetterShuffler(5);
   const [letters, setLetters] = useState<string[][]>(letterShuffler.shuffle());
-  const [words, setWords] = useState(0);
   const [wordValidator, setWordValidator] = useState<WordValidator | null>(
     null
   );
   const [userWords, setUserWords] = useState<string[]>([]);
+  const [solution, setSolution] = useState<Set<string>>();
   const [modalOpen, setModalOpen] = useState(false);
   const [timeLeft, setTimeLeft] = useState(180);
   const [gameOver, setGameOver] = useState(false);
@@ -82,10 +82,7 @@ function App() {
       puzzleSolver = new PuzzleSolver(moveValidator, tempWordValidator);
       setWordValidator(tempWordValidator);
       puzzleSolver.searchBoard(board!);
-      puzzleSolver.getWords().forEach((wordString: string) => {
-        console.log(wordString);
-      });
-      setWords(puzzleSolver.getWords().size);
+      setSolution(puzzleSolver.getWords());
     }
   }, [moveValidator]);
 
@@ -114,7 +111,7 @@ function App() {
     return (
       <EndScreen
         userWords={userWords}
-        totalWords={words}
+        solution={solution!}
         onRestart={handleRestart}
       />
     );
@@ -169,7 +166,8 @@ function App() {
               moveValidator={moveValidator}
             />
             <button onClick={shuffleBoard}>Shuffle board</button>
-            <div className="subtitle">Total Words: {words} </div>
+            <button onClick={() => setGameOver(true)}>Retire early</button>
+            <div className="subtitle">Total Words: {solution?.size} </div>
             <div className="subtitle">Time Left: {formatTime(timeLeft)}</div>
           </div>
         )}
