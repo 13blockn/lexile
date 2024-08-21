@@ -3,7 +3,7 @@ import React from 'react';
 interface EndScreenProps {
   userWords: string[]
   totalWords: number
-  onRestart: any
+  onRestart: () => void
 }
 // Need to show all words on non-daily challenge
 const EndScreen: React.FC<EndScreenProps> = ({ userWords, totalWords, onRestart }) => {

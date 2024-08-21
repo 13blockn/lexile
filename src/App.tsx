@@ -24,6 +24,7 @@ function App() {
   const [gameOver, setGameOver] = useState(false);
   const [board, setBoard] = useState<BoardModel | null>();
   const [moveValidator, setMoveValidator] = useState<MoveValidator>();
+  const [dictionary, setDictionary] = useState<string[]>([]);
 
   useEffect(() => {
     if (timeLeft > 0) {
@@ -40,11 +41,10 @@ function App() {
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
+    return `${minutes}:${remainingSeconds < 10 ? "0" : ""}${remainingSeconds}`;
   };
 
   let puzzleSolver;
-  let lines: string[] = [];
 
   useEffect(() => {
     const loadTextFile = async () => {
@@ -54,10 +54,11 @@ function App() {
         //const response = await fetch('./words.txt'); // Middle ground dictionary for speed
         //const response = await fetch('./test_words.txt'); // Use for testing
         const text = await response.text();
-        lines = text
+        const lines = text
           .split("\n")
           .map((line) => line.trim())
           .filter((line) => line.length > 0);
+        setDictionary(lines);
       } catch (error) {
         console.error("Error loading the text file:", error);
       }
@@ -67,23 +68,32 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (!lines) {
-      console.log('dont create word validator before lines are initialized');
+    if (board) {
+      setMoveValidator(new MoveValidator(board)); // This looks right
+    }
+  }, [board]);
+
+  useEffect(() => {
+    if (moveValidator) {
+      const tempWordValidator = new WordValidator(dictionary);
+      puzzleSolver = new PuzzleSolver(moveValidator, tempWordValidator);
+      setWordValidator(tempWordValidator);
+      puzzleSolver.searchBoard(board!);
+      puzzleSolver.getWords().forEach((wordString: string) => {
+        console.log(wordString);
+      });
+      setWords(puzzleSolver.getWords().size);
+    }
+  }, [moveValidator]);
+
+  useEffect(() => {
+    if (dictionary.length === 0) {
       return;
     }
-    setBoard(new BoardModel(letters));
-    // Board is always set after setBoard is called
-    setMoveValidator(new MoveValidator(board!));
-    const tempWordValidator = new WordValidator(lines);
-    // MoveValidator is always set after setMoveValidator is called
-    puzzleSolver = new PuzzleSolver(moveValidator!, tempWordValidator);
-    setWordValidator(tempWordValidator);
-    puzzleSolver.searchBoard(board!);
-    puzzleSolver.getWords().forEach((wordString: string) => {
-      console.log(wordString);
-    });
-    setWords(puzzleSolver.getWords().size);
-  }, [letters]);
+
+    const tempBoard = new BoardModel(letters);
+    setBoard(tempBoard);
+  }, [letters, dictionary]);
 
   // Shuffle the board and update the state
   const shuffleBoard = useCallback(() => {
@@ -98,7 +108,13 @@ function App() {
   };
 
   if (gameOver) {
-    return <EndScreen userWords={userWords} totalWords={words} onRestart={handleRestart} />;
+    return (
+      <EndScreen
+        userWords={userWords}
+        totalWords={words}
+        onRestart={handleRestart}
+      />
+    );
   }
 
   return (
@@ -135,7 +151,8 @@ function App() {
           letters. <br />
           You can connect letters in any direction, but you cannot use the same
           letter twice. <br />
-          To start your word, left click on a letter. From there, you can drag your mouse. <br />
+          To start your word, left click on a letter. From there, you can drag
+          your mouse. <br />
           When you're ready to submit your word, press enter!
         </Typography>
       </Popover>

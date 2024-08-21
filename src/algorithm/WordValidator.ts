@@ -24,7 +24,8 @@ export class WordValidator {
 
   public checkAndAddToSolution(input: string): boolean {
     // Words must be longer than 2 letters
-    if (input.length < 3) {
+    // This should actually be dependent on board size
+    if (input.length < 4) {
       return false;
     }
 
