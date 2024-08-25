@@ -150,7 +150,7 @@ function App() {
           letter twice. <br />
           To start your word, left click on a letter. From there, you can drag
           your mouse. <br />
-          When you're ready to submit your word, press enter!
+          When you're ready to submit your word, press enter or tap on the tile!
         </Typography>
       </Popover>
       <div style={{ display: "flex", flexDirection: "row" }}>

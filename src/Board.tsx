@@ -38,7 +38,7 @@ const Board: React.FC<BoardProps> = ({
   const handleTileClick = (row: number, col: number) => {
     if (isSearching) {
       setSubmissionMethod(SubmissionMethod.CLICK);
-      submitWord();
+      submitWord(false);
       return;
     }
     setIsSearching(true);
