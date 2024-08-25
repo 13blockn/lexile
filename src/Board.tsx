@@ -5,6 +5,7 @@ import "./Board.css";
 import { MoveValidator } from "./algorithm/MoveValidator";
 import { Coordinate } from "./models/Coordinate";
 import { useTheme } from "@mui/material/styles";
+import { Box } from '@mui/material';
 
 interface BoardProps {
   board: BoardModel;
@@ -64,7 +65,7 @@ const Board: React.FC<BoardProps> = ({
         const prevCell = prev[prev.length - 1];
 
         const cellElement = document.querySelector(
-          `.board-cell[data-row='${prevCell.xCoord}'][data-col='${prevCell.yCoord}']`
+          `[data-row='${prevCell.xCoord}'][data-col='${prevCell.yCoord}']`
         );
         if (cellElement) {
           cellElement.classList.remove("highlight");
@@ -94,7 +95,7 @@ const Board: React.FC<BoardProps> = ({
   // Need a special function for highlighting cells because the mouse event happens on the child element
   const highlightCell = (row: number, col: number) => {
     const cellElement = document.querySelector(
-      `.board-cell[data-row='${row}'][data-col='${col}']`
+      `[data-row='${row}'][data-col='${col}']`
     );
     if (cellElement) {
       cellElement.classList.add("highlight");
@@ -153,15 +154,19 @@ const Board: React.FC<BoardProps> = ({
       {Array.from({ length: boardSize }).map((_, rowIndex) => (
         <div key={rowIndex} className="board-row">
           {Array.from({ length: boardSize }).map((_, colIndex) => (
-            <div
+            <Box
               key={colIndex}
-              className="board-cell"
               data-row={rowIndex}
               data-col={colIndex}
-              style={{
+              sx={{
+                width: { xs: '60px', sm: '100px' },
+                height: { xs: '60px', sm: '100px' },
+                border: `1px solid ${theme.palette.divider}`,
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
                 backgroundColor: theme.palette.background.default,
                 color: theme.palette.text.primary,
-                border: `1px solid ${theme.palette.divider}`,
               }}
             >
               <div
@@ -171,6 +176,7 @@ const Board: React.FC<BoardProps> = ({
                 onPointerEnter={() => handlePointerEnter(rowIndex, colIndex)}
                 onClick={() => handleTileClick(rowIndex, colIndex)}
                 onTouchStart={(e) => {
+                  // Not really able to prevent default action
                   e.preventDefault();
                   handleTileClick(rowIndex, colIndex);
                 }}
@@ -188,7 +194,7 @@ const Board: React.FC<BoardProps> = ({
                   ? "Qu"
                   : boardLetters[rowIndex][colIndex]}
               </div>
-            </div>
+            </Box>
           ))}
         </div>
       ))}

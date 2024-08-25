@@ -8,7 +8,7 @@ import { PuzzleSolver } from "./algorithm/PuzzleSolver";
 import { MoveValidator } from "./algorithm/MoveValidator";
 import { WordValidator } from "./algorithm/WordValidator";
 import EndScreen from "./EndScreen";
-import { Button, Typography, Popover } from "@mui/material";
+import { Box, Button, Typography, Popover } from "@mui/material";
 
 const PUZZLE_SIZE = 5;
 
@@ -105,7 +105,7 @@ function App() {
 
     const tempBoard = new BoardModel(letters);
     setBoard(tempBoard);
-    setSearchParams({ board: tempBoard.printBoard()} );
+    setSearchParams({ board: tempBoard.printBoard() });
   }, [letters, dictionary]);
 
   // Shuffle the board and update the state
@@ -168,18 +168,28 @@ function App() {
           When you're ready to submit your word, press enter or tap on the tile!
         </Typography>
       </Popover>
-      <div style={{ display: "flex", flexDirection: "row" }}>
-        <div style={{ flex: 1 }}></div>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "row",
+        }}
+      >
+        <Box sx={{ flex: 1, display: { xs: "none", sm: "block" } }} />
         {wordValidator && board && moveValidator && (
-          <div className="card" style={{ flex: 3 }}>
+          <Box
+            className="card"
+            sx={{
+              flex: { xs: 1, sm: 3 },
+            }}
+          >
             <Board
               board={board}
               wordValidator={wordValidator}
               setUserWords={setUserWords}
               moveValidator={moveValidator}
             />
-            <div
-              style={{ display: "flex", gap: "10px", justifyContent: "center" }}
+            <Box
+              sx={{ display: "flex", gap: "10px", justifyContent: "center" }}
             >
               <Button variant="contained" sx={{ mt: 1 }} onClick={shuffleBoard}>
                 Shuffle board
@@ -191,20 +201,31 @@ function App() {
               >
                 Retire early
               </Button>
-            </div>
-            <div className="subtitle">Total Words: {solution?.size} </div>
-            <div className="subtitle">Time Left: {formatTime(timeLeft)}</div>
-          </div>
+            </Box>
+            <Typography className="subtitle">
+              Total Words: {solution?.size}
+            </Typography>
+            <Typography className="subtitle">
+              Time Left: {formatTime(timeLeft)}
+            </Typography>
+          </Box>
         )}
-        <div style={{ maxHeight: "600px", overflowY: "scroll", flex: 1 }}>
+        <Box
+          sx={{
+            maxHeight: "600px",
+            overflowY: "scroll",
+            flex: 1,
+            display: { xs: "none", sm: "block" },
+          }}
+        >
           <Typography variant="h5">Your Words</Typography>
           {userWords.map((word, index) => (
             <Typography key={index} sx={{ mt: 1 }}>
               {word}
             </Typography>
           ))}
-        </div>
-      </div>
+        </Box>
+      </Box>
     </div>
   );
 }

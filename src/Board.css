@@ -8,21 +8,12 @@
   display: flex;
 }
 
-.board-cell {
-  width: 100px;
-  height: 100px;
-  border: 1px solid #ddd;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
 .board-text {
   padding: 16px;
   font-size: 24px;
 }
 
 /* Hack: Override theming for higlihgts */
-.board-cell.highlight {
+.highlight {
   background-color: lightblue !important;
 }
