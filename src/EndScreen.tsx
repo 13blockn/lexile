@@ -1,11 +1,16 @@
-import React from "react";
+import React, { useState } from "react";
 import {
+  Button,
+  Typography,
   List,
   ListItem,
   ListItemText,
   ListItemIcon,
-  Typography,
-  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
 } from "@mui/material";
 import CheckIcon from "@mui/icons-material/Check";
 import { MoveScorer } from "./algorithm/MoveScorer";
@@ -22,6 +27,7 @@ const EndScreen: React.FC<EndScreenProps> = ({
   solution,
   onRestart,
 }) => {
+  const [open, setOpen] = useState(false);
   // Sort solution by length (longest to shortest) and then alphabetically
   const sortedSolution = [...solution].sort(
     (a, b) => b.length - a.length || a.localeCompare(b)
@@ -36,6 +42,20 @@ const EndScreen: React.FC<EndScreenProps> = ({
   sortedSolution.forEach((word: string) => {
     puzzleScore += moveScorer.scoreWord(word);
   });
+
+  const shareText = `I found ${userWords.length} words and scored ${userScore} points out of ${puzzleScore} in Lexile! Can you beat my score? www.nate-block.com`;
+
+  const handleCopyToClipboard = () => {
+    navigator.clipboard
+      .writeText(shareText)
+      .then(() => {
+        console.log("Text copied to clipboard!");
+      })
+      .catch((error) => console.error("Failed to copy text:", error));
+  };
+
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
 
   return (
     <div
@@ -74,9 +94,27 @@ const EndScreen: React.FC<EndScreenProps> = ({
           ))}
         </List>
       </div>
-      <Button variant="contained" color="primary" onClick={onRestart}>
+      <Button variant="contained" color="primary" onClick={handleOpen}>
+        Share Your Score
+      </Button>
+      <Button variant="outlined" color="secondary" onClick={onRestart}>
         Play Again
       </Button>
+
+      <Dialog open={open} onClose={handleClose}>
+        <DialogTitle>Share Your Score</DialogTitle>
+        <DialogContent>
+          <DialogContentText>{shareText}</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCopyToClipboard} color="primary">
+            Copy to Clipboard
+          </Button>
+          <Button onClick={handleClose} color="secondary">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };
