@@ -4,7 +4,7 @@ import { Board as BoardModel } from "./models/Board";
 import "./Board.css";
 import { MoveValidator } from "./algorithm/MoveValidator";
 import { Coordinate } from "./models/Coordinate";
-import { useTheme } from '@mui/material/styles';
+import { useTheme } from "@mui/material/styles";
 
 interface BoardProps {
   board: BoardModel;
@@ -170,6 +170,18 @@ const Board: React.FC<BoardProps> = ({
                 data-col={colIndex}
                 onPointerEnter={() => handlePointerEnter(rowIndex, colIndex)}
                 onClick={() => handleTileClick(rowIndex, colIndex)}
+                onTouchStart={(e) => {
+                  e.preventDefault();
+                  handleTileClick(rowIndex, colIndex);
+                }}
+                onTouchMove={(e) => {
+                  e.preventDefault();
+                  handlePointerEnter(rowIndex, colIndex);
+                }}
+                onTouchEnd={(e) => {
+                  e.preventDefault();
+                  handleTileClick(rowIndex, colIndex);
+                }}
                 style={{ color: theme.palette.text.primary }}
               >
                 {boardLetters[rowIndex][colIndex] === "QU"
