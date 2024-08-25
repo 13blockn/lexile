@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import "./App.css";
 import { LetterShuffler } from "./algorithm/LetterShuffler";
 import Board from "./Board";
@@ -9,8 +10,10 @@ import { WordValidator } from "./algorithm/WordValidator";
 import EndScreen from "./EndScreen";
 import { Button, Typography, Popover } from "@mui/material";
 
+const PUZZLE_SIZE = 5;
+
 function App() {
-  const letterShuffler = new LetterShuffler(5);
+  const letterShuffler = new LetterShuffler(PUZZLE_SIZE);
   const [letters, setLetters] = useState<string[][]>(letterShuffler.shuffle());
   const [wordValidator, setWordValidator] = useState<WordValidator | null>(
     null
@@ -23,6 +26,17 @@ function App() {
   const [board, setBoard] = useState<BoardModel | null>();
   const [moveValidator, setMoveValidator] = useState<MoveValidator>();
   const [dictionary, setDictionary] = useState<string[]>([]);
+
+  const [searchParams, setSearchParams] = useSearchParams();
+  const boardSetup = searchParams.get("board");
+
+  useEffect(() => {
+    if (boardSetup) {
+      setLetters(BoardModel.mapStringToBoard(boardSetup, PUZZLE_SIZE));
+    } else {
+      setLetters(letterShuffler.shuffle());
+    }
+  }, []);
 
   useEffect(() => {
     if (modalOpen) {
@@ -91,6 +105,7 @@ function App() {
 
     const tempBoard = new BoardModel(letters);
     setBoard(tempBoard);
+    setSearchParams({ board: tempBoard.printBoard()} );
   }, [letters, dictionary]);
 
   // Shuffle the board and update the state

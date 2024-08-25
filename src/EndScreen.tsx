@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 import {
   Button,
   Typography,
@@ -28,6 +29,7 @@ const EndScreen: React.FC<EndScreenProps> = ({
   onRestart,
 }) => {
   const [open, setOpen] = useState(false);
+  const location = useLocation();
   // Sort solution by length (longest to shortest) and then alphabetically
   const sortedSolution = [...solution].sort(
     (a, b) => b.length - a.length || a.localeCompare(b)
@@ -43,7 +45,8 @@ const EndScreen: React.FC<EndScreenProps> = ({
     puzzleScore += moveScorer.scoreWord(word);
   });
 
-  const shareText = `I found ${userWords.length} words and scored ${userScore} points out of ${puzzleScore} in Lexile! Can you beat my score? www.nate-block.com`;
+  const baseUrl = `${window.location.origin}${location.pathname}${location.search}`;
+  const shareText = `I found ${userWords.length} words and scored ${userScore} points out of ${puzzleScore} in Lexile! Can you beat my score? ${baseUrl}`;
 
   const handleCopyToClipboard = () => {
     navigator.clipboard

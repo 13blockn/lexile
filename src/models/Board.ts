@@ -106,10 +106,12 @@ export class Board {
     return this.neighbors.get(coordinate) || [];
   }
 
-  public printBoard(): void {
+  public printBoard(): string {
+    let boardString = '';
     for (const row of this.letters) {
-      console.log(row.join(""));
+      boardString += row.join('');
     }
+    return boardString;
   }
 
   public printLocations(): void {
@@ -142,5 +144,18 @@ export class Board {
       });
       console.log("\n");
     });
+  }
+
+  static mapStringToBoard(input: string, length: number): string[][] {
+    const letters: string[][] = Array.from({ length }, () => Array(length).fill(''));
+    let index = 0;
+    for (let i = 0; i < length; i++) {
+      for (let j = 0; j < length; j++) {
+        letters[i][j] = input.charAt(index);
+        index++;
+      }
+    }
+
+    return letters;
   }
 }
