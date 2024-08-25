@@ -112,7 +112,7 @@ const Board: React.FC<BoardProps> = ({
     );
     const highlightedWord = highlightedLetters.join("");
     const isValidWord = wordValidator.check(highlightedWord);
-    // Need to prevent double submits
+    // For now, score is only available at the end
     if (isValidWord) {
       setUserWords((prev) => {
         if (!prev.includes(highlightedWord)) {

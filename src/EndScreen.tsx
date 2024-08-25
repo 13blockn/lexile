@@ -8,6 +8,7 @@ import {
   Button,
 } from "@mui/material";
 import CheckIcon from "@mui/icons-material/Check";
+import { MoveScorer } from "./algorithm/MoveScorer";
 
 interface EndScreenProps {
   userWords: string[];
@@ -26,6 +27,16 @@ const EndScreen: React.FC<EndScreenProps> = ({
     (a, b) => b.length - a.length || a.localeCompare(b)
   );
 
+  const moveScorer = new MoveScorer();
+  let userScore = 0;
+  userWords.forEach((word: string) => {
+    userScore += moveScorer.scoreWord(word);
+  });
+  let puzzleScore = 0;
+  sortedSolution.forEach((word: string) => {
+    puzzleScore += moveScorer.scoreWord(word);
+  });
+
   return (
     <div
       style={{
@@ -38,7 +49,8 @@ const EndScreen: React.FC<EndScreenProps> = ({
     >
       <Typography variant="h4">Time's Up!</Typography>
       <Typography variant="h5">
-        You found {userWords.length} out of {solution.size} words.
+        You found {userWords.length} out of {solution.size} words. <br />
+        You scored {userScore} points out of {puzzleScore}
       </Typography>
       <div>
         <Typography variant="h6">All Words:</Typography>
