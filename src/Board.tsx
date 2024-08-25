@@ -17,6 +17,7 @@ enum SubmissionMethod {
   SWIPE,
   ENTER,
   CLICK,
+  SPACE,
 }
 
 // WordValidator is undefined
@@ -102,12 +103,16 @@ const Board: React.FC<BoardProps> = ({
 
   const handleKeyDown = (event: KeyboardEvent) => {
     if (event.key === "Enter") {
-      submitWord();
+      submitWord(false);
       setSubmissionMethod(SubmissionMethod.ENTER);
+    } else if (event.key === " ") {
+      event.preventDefault(); // Prevent the default space key behavior (scrolling)
+      submitWord(true);
+      setSubmissionMethod(SubmissionMethod.SPACE);
     }
   };
 
-  const submitWord = () => {
+  const submitWord = (continueSolving: boolean) => {
     const highlightedLetters = highlightedCells.map(
       (cell) => boardLetters[cell.xCoord][cell.yCoord]
     );
@@ -123,6 +128,10 @@ const Board: React.FC<BoardProps> = ({
       });
     }
 
+    // Keep the current word for faster solving
+    if (continueSolving) {
+      return;
+    }
     document.querySelectorAll(".highlight").forEach((element) => {
       element.classList.remove("highlight");
     });
