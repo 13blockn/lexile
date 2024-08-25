@@ -6,10 +6,8 @@ import { Board as BoardModel } from "./models/Board";
 import { PuzzleSolver } from "./algorithm/PuzzleSolver";
 import { MoveValidator } from "./algorithm/MoveValidator";
 import { WordValidator } from "./algorithm/WordValidator";
-import Button from "@mui/material/Button";
-import Popover from "@mui/material/Popover";
-import Typography from "@mui/material/Typography";
 import EndScreen from "./EndScreen";
+import { Button, Typography, Popover } from "@mui/material";
 
 function App() {
   const letterShuffler = new LetterShuffler(5);
@@ -156,25 +154,40 @@ function App() {
         </Typography>
       </Popover>
       <div style={{ display: "flex", flexDirection: "row" }}>
+        <div style={{ flex: 1 }}></div>
         {wordValidator && board && moveValidator && (
-          <div className="card">
+          <div className="card" style={{ flex: 3 }}>
             <Board
               board={board}
               wordValidator={wordValidator}
               setUserWords={setUserWords}
               moveValidator={moveValidator}
             />
-            <button onClick={shuffleBoard}>Shuffle board</button>
-            <button onClick={() => setGameOver(true)}>Retire early</button>
+            <div
+              style={{ display: "flex", gap: "10px", justifyContent: "center" }}
+            >
+              <Button variant="contained" sx={{ mt: 1 }} onClick={shuffleBoard}>
+                Shuffle board
+              </Button>
+              <Button
+                variant="contained"
+                sx={{ mt: 1 }}
+                onClick={() => setGameOver(true)}
+              >
+                Retire early
+              </Button>
+            </div>
             <div className="subtitle">Total Words: {solution?.size} </div>
             <div className="subtitle">Time Left: {formatTime(timeLeft)}</div>
           </div>
         )}
-        <div>
-          <h3>Your Words</h3>
-          {userWords.map((word, index) => {
-            return <div key={index}>{word}</div>;
-          })}
+        <div style={{ maxHeight: "600px", overflowY: "scroll", flex: 1 }}>
+          <Typography variant="h5">Your Words</Typography>
+          {userWords.map((word, index) => (
+            <Typography key={index} sx={{ mt: 1 }}>
+              {word}
+            </Typography>
+          ))}
         </div>
       </div>
     </div>

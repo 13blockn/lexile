@@ -4,6 +4,7 @@ import { Board as BoardModel } from "./models/Board";
 import "./Board.css";
 import { MoveValidator } from "./algorithm/MoveValidator";
 import { Coordinate } from "./models/Coordinate";
+import { useTheme } from '@mui/material/styles';
 
 interface BoardProps {
   board: BoardModel;
@@ -116,7 +117,7 @@ const Board: React.FC<BoardProps> = ({
     if (isValidWord) {
       setUserWords((prev) => {
         if (!prev.includes(highlightedWord)) {
-          return [...prev, highlightedWord];
+          return [highlightedWord, ...prev];
         }
         return prev;
       });
@@ -136,35 +137,41 @@ const Board: React.FC<BoardProps> = ({
     };
   }, [highlightedCells]);
 
+  const theme = useTheme();
+
   return (
-    <>
-      <div className="board">
-        {Array.from({ length: boardSize }).map((_, rowIndex) => (
-          <div key={rowIndex} className="board-row">
-            {Array.from({ length: boardSize }).map((_, colIndex) => (
+    <div className="board">
+      {Array.from({ length: boardSize }).map((_, rowIndex) => (
+        <div key={rowIndex} className="board-row">
+          {Array.from({ length: boardSize }).map((_, colIndex) => (
+            <div
+              key={colIndex}
+              className="board-cell"
+              data-row={rowIndex}
+              data-col={colIndex}
+              style={{
+                backgroundColor: theme.palette.background.default,
+                color: theme.palette.text.primary,
+                border: `1px solid ${theme.palette.divider}`,
+              }}
+            >
               <div
-                key={colIndex}
-                className={`board-cell`}
+                className="board-text"
                 data-row={rowIndex}
                 data-col={colIndex}
+                onPointerEnter={() => handlePointerEnter(rowIndex, colIndex)}
+                onClick={() => handleTileClick(rowIndex, colIndex)}
+                style={{ color: theme.palette.text.primary }}
               >
-                <div
-                  className="board-text"
-                  data-row={rowIndex}
-                  data-col={colIndex}
-                  onPointerEnter={() => handlePointerEnter(rowIndex, colIndex)}
-                  onClick={() => handleTileClick(rowIndex, colIndex)}
-                >
-                  {boardLetters[rowIndex][colIndex] === "QU"
-                    ? "Qu"
-                    : boardLetters[rowIndex][colIndex]}{" "}
-                </div>
+                {boardLetters[rowIndex][colIndex] === "QU"
+                  ? "Qu"
+                  : boardLetters[rowIndex][colIndex]}
               </div>
-            ))}
-          </div>
-        ))}
-      </div>
-    </>
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
   );
 };
 

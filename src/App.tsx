@@ -39,7 +39,17 @@ const App: React.FC = () => {
   return (
     <ThemeProvider theme={theme}>
       <Router>
-        <Box display="flex" flexDirection="column" minHeight="100vh">
+        <Box
+          display="flex"
+          flexDirection="column"
+          minHeight="100vh"
+          width="100vw"
+          justifyContent="center"
+          style={{
+            backgroundColor: theme.palette.background.default,
+            color: theme.palette.text.primary,
+          }}
+        >
           <Container
             style={{ textAlign: "center", flexGrow: 1, marginTop: "50px" }}
           >
