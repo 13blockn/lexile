@@ -66,13 +66,15 @@ const Board: React.FC<BoardProps> = ({
 
       if (!moveValidator.isAdjacent(prevCell, newCoord)) {
         if (isMobile()) {
-          navigator.vibrate([50,50]);
+          // Chrome blocks vibrate on drag
+          //navigator.vibrate([50,50]);
         }
         return prev;
       } else if (lastCell?.equals(newCoord)) {
         // Backtracking. Remove the head if we went back to an old tile
         if (isMobile()) {
-          navigator.vibrate(50);
+          // Chrome blocks vibrate on drag
+          //navigator.vibrate(50);
         }
         const prevCell = prev[prev.length - 1];
 
@@ -93,7 +95,8 @@ const Board: React.FC<BoardProps> = ({
         });
 
         if (isMobile()) {
-          navigator.vibrate(30);
+          // Chrome blocks vibrate on drag
+          //navigator.vibrate(30);
         }
         highlightCell(row, col);
         return [...prev, newCoord];
