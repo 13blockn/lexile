@@ -21,7 +21,11 @@ enum SubmissionMethod {
   SPACE,
 }
 
-// WordValidator is undefined
+// For now, determine if mobile based on if it supports touch, otherwise download Bowser library
+const isMobile = () => {
+  return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+}
+
 const Board: React.FC<BoardProps> = ({
   board,
   wordValidator,
@@ -61,9 +65,15 @@ const Board: React.FC<BoardProps> = ({
       const newCoord = new Coordinate(row, col);
 
       if (!moveValidator.isAdjacent(prevCell, newCoord)) {
+        if (isMobile()) {
+          navigator.vibrate([50,50]);
+        }
         return prev;
       } else if (lastCell?.equals(newCoord)) {
         // Backtracking. Remove the head if we went back to an old tile
+        if (isMobile()) {
+          navigator.vibrate(50);
+        }
         const prevCell = prev[prev.length - 1];
 
         const cellElement = document.querySelector(
@@ -82,6 +92,9 @@ const Board: React.FC<BoardProps> = ({
           }
         });
 
+        if (isMobile()) {
+          navigator.vibrate(30);
+        }
         highlightCell(row, col);
         return [...prev, newCoord];
       }
@@ -117,12 +130,21 @@ const Board: React.FC<BoardProps> = ({
     const isValidWord = wordValidator.check(highlightedWord);
     // For now, score is only available at the end
     if (isValidWord) {
+      if (isMobile()) {
+        navigator.vibrate([100]);
+        //console.log('Vibrate on mobile');
+      }
       setUserWords((prev) => {
         if (!prev.includes(highlightedWord)) {
           return [highlightedWord, ...prev];
         }
         return prev;
       });
+    } else {
+      if (isMobile()) {
+        navigator.vibrate([200]);
+        //console.log('Vibrate for invalid word');
+      }
     }
 
     // Keep the current word for faster solving
