@@ -152,9 +152,9 @@ const Board: React.FC<BoardProps> = ({
           touch.clientY
         ) as HTMLElement;
 
-
         if (
           target &&
+          target.classList.contains('board-text') &&
           target.dataset.row !== undefined &&
           target.dataset.col !== undefined
         ) {
