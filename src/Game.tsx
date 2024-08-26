@@ -206,6 +206,9 @@ function App() {
               Total Words: {solution?.size}
             </Typography>
             <Typography className="subtitle">
+              Found Words: {userWords.length}
+            </Typography>
+            <Typography className="subtitle">
               Time Left: {formatTime(timeLeft)}
             </Typography>
           </Box>

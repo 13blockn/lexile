@@ -5,7 +5,7 @@ import "./Board.css";
 import { MoveValidator } from "./algorithm/MoveValidator";
 import { Coordinate } from "./models/Coordinate";
 import { useTheme } from "@mui/material/styles";
-import { Box } from '@mui/material';
+import { Box } from "@mui/material";
 
 interface BoardProps {
   board: BoardModel;
@@ -32,6 +32,8 @@ const Board: React.FC<BoardProps> = ({
   const [isSearching, setIsSearching] = useState(false);
   const [submissionMethod, setSubmissionMethod] =
     useState<SubmissionMethod | null>();
+  const [rowIdx, setRowIndex] = useState<number>();
+  const [colIdx, setColIndex] = useState<number>();
 
   const boardLetters = board.getLetters();
   const boardSize = boardLetters.length;
@@ -141,6 +143,46 @@ const Board: React.FC<BoardProps> = ({
   };
 
   useEffect(() => {
+    const handleTouchMove = (event: TouchEvent) => {
+      event.preventDefault();
+      if (rowIdx !== undefined && colIdx !== undefined) {
+        const touch = event.touches[0];
+        const target = document.elementFromPoint(
+          touch.clientX,
+          touch.clientY
+        ) as HTMLElement;
+
+
+        if (
+          target &&
+          target.dataset.row !== undefined &&
+          target.dataset.col !== undefined
+        ) {
+          const currentRow = parseInt(target.dataset.row, 10);
+          const currentCol = parseInt(target.dataset.col, 10);
+
+          setRowIndex(currentRow);
+          setColIndex(currentCol);
+          handlePointerEnter(currentRow, currentCol);
+        }
+      }
+    };
+
+    const element = document.getElementById(`board-text-${rowIdx}-${colIdx}`);
+    if (element) {
+      element.addEventListener("touchmove", handleTouchMove, {
+        passive: false,
+      });
+    }
+
+    return () => {
+      if (element) {
+        element.removeEventListener("touchmove", handleTouchMove);
+      }
+    };
+  }, [rowIdx, colIdx, handlePointerEnter]);
+
+  useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
@@ -159,36 +201,41 @@ const Board: React.FC<BoardProps> = ({
               data-row={rowIndex}
               data-col={colIndex}
               sx={{
-                width: { xs: '60px', sm: '100px' },
-                height: { xs: '60px', sm: '100px' },
+                width: { xs: "60px", sm: "100px" },
+                height: { xs: "60px", sm: "100px" },
                 border: `1px solid ${theme.palette.divider}`,
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
                 backgroundColor: theme.palette.background.default,
                 color: theme.palette.text.primary,
               }}
             >
               <div
+                id={`board-text-${rowIndex}-${colIndex}`}
                 className="board-text"
                 data-row={rowIndex}
                 data-col={colIndex}
                 onPointerEnter={() => handlePointerEnter(rowIndex, colIndex)}
                 onClick={() => handleTileClick(rowIndex, colIndex)}
-                onTouchStart={(e) => {
-                  // Not really able to prevent default action
-                  e.preventDefault();
+                onTouchStart={() => {
                   handleTileClick(rowIndex, colIndex);
+                  setRowIndex(rowIndex);
+                  setColIndex(colIndex);
                 }}
-                onTouchMove={(e) => {
-                  e.preventDefault();
-                  handlePointerEnter(rowIndex, colIndex);
+                onTouchMove={() => {
+                  setRowIndex(rowIndex);
+                  setColIndex(colIndex);
                 }}
-                onTouchEnd={(e) => {
-                  e.preventDefault();
+                onTouchEnd={() => {
                   handleTileClick(rowIndex, colIndex);
+                  setRowIndex(rowIndex);
+                  setColIndex(colIndex);
                 }}
-                style={{ color: theme.palette.text.primary }}
+                style={{
+                  color: theme.palette.text.primary,
+                  touchAction: "none",
+                }}
               >
                 {boardLetters[rowIndex][colIndex] === "QU"
                   ? "Qu"
