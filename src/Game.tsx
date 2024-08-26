@@ -177,9 +177,9 @@ function App() {
         <Box sx={{ flex: 1, display: { xs: "none", sm: "block" } }} />
         {wordValidator && board && moveValidator && (
           <Box
-            className="card"
             sx={{
               flex: { xs: 1, sm: 3 },
+              padding: '2em 0em',
             }}
           >
             <Board

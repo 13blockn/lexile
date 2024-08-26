@@ -11,6 +11,7 @@
 
 .board-text {
   font-size: 24px;
+  padding: 16px;
 }
 
 /* Hack: Override theming for higlihgts */

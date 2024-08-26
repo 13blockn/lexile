@@ -76,18 +76,12 @@ const Board: React.FC<BoardProps> = ({
       } else if (prevCell.equals(newCoord)) {
         return prev;
       } else {
-        // Add the new cell to the highlighted list
-        // TODO: Don't highlight already visited if visited. Below doesn't work, not debugged
         highlightedCells.forEach((cell) => {
           if (cell.equals(newCoord)) {
             return prev;
           }
         });
 
-        // Go this way once I use Coordinate and have the equals function
-        // if (highlightedCells.includes({row, col})) {
-        //   return prev;
-        // }
         highlightCell(row, col);
         return [...prev, newCoord];
       }
@@ -168,7 +162,7 @@ const Board: React.FC<BoardProps> = ({
 
           const distance = Math.sqrt(Math.pow(touch.clientX - centerX, 2) + Math.pow(touch.clientY - centerY, 2));
 
-          const threshold = 30;
+          const threshold = 14;
 
           if (distance <= threshold) {
             setRowIndex(currentRow);
@@ -212,8 +206,8 @@ const Board: React.FC<BoardProps> = ({
               data-row={rowIndex}
               data-col={colIndex}
               sx={{
-                width: { xs: "65px", sm: "100px" },
-                height: { xs: "65px", sm: "100px" },
+                width: { xs: "63px", sm: "100px" },
+                height: { xs: "63px", sm: "100px" },
                 border: `1px solid ${theme.palette.divider}`,
                 display: "flex",
                 justifyContent: "center",
