@@ -161,9 +161,20 @@ const Board: React.FC<BoardProps> = ({
           const currentRow = parseInt(target.dataset.row, 10);
           const currentCol = parseInt(target.dataset.col, 10);
 
-          setRowIndex(currentRow);
-          setColIndex(currentCol);
-          handlePointerEnter(currentRow, currentCol);
+          // Calculate the distance from the center of the elemnt to register as a touch event
+          const rect = target.getBoundingClientRect();
+          const centerX = rect.left + rect.width / 2;
+          const centerY = rect.top + rect.height / 2;
+
+          const distance = Math.sqrt(Math.pow(touch.clientX - centerX, 2) + Math.pow(touch.clientY - centerY, 2));
+
+          const threshold = 30;
+
+          if (distance <= threshold) {
+            setRowIndex(currentRow);
+            setColIndex(currentCol);
+            handlePointerEnter(currentRow, currentCol);
+          }
         }
       }
     };
@@ -201,8 +212,8 @@ const Board: React.FC<BoardProps> = ({
               data-row={rowIndex}
               data-col={colIndex}
               sx={{
-                width: { xs: "60px", sm: "100px" },
-                height: { xs: "60px", sm: "100px" },
+                width: { xs: "65px", sm: "100px" },
+                height: { xs: "65px", sm: "100px" },
                 border: `1px solid ${theme.palette.divider}`,
                 display: "flex",
                 justifyContent: "center",
