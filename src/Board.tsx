@@ -162,7 +162,7 @@ const Board: React.FC<BoardProps> = ({
 
           const distance = Math.sqrt(Math.pow(touch.clientX - centerX, 2) + Math.pow(touch.clientY - centerY, 2));
 
-          const threshold = 14;
+          const threshold = 20;
 
           if (distance <= threshold) {
             setRowIndex(currentRow);
