@@ -34,7 +34,7 @@ function App() {
     if (boardSetup) {
       setLetters(BoardModel.mapStringToBoard(boardSetup, PUZZLE_SIZE));
     } else {
-      setLetters(letterShuffler.shuffle());
+      setLetters(letterShuffler.dailyShuffle());
     }
   }, []);
 

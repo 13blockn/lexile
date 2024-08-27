@@ -132,21 +132,20 @@ const Board: React.FC<BoardProps> = ({
     if (isValidWord) {
       setUserWords((prev) => {
         if (!prev.includes(highlightedWord)) {
+          setAlertMessage("Nice find!");
           return [highlightedWord, ...prev];
         }
+        setAlertMessage("Word already found. Try again!");
         return prev;
       });
-      setAlertMessage("Nice find!");
       setAlertSeverity("success");
       setOpen(true);
     } else {
-      // Show failure alert
-      setAlertMessage("Word not found. Try again!");
+      setAlertMessage("Invalid word. Try again!");
       setAlertSeverity("error");
       setOpen(true);
     }
 
-    setTimeout(() => setOpen(false), 750);
     // Keep the current word for faster solving
     if (continueSolving) {
       return;
@@ -278,7 +277,7 @@ const Board: React.FC<BoardProps> = ({
       <Snackbar
         anchorOrigin={{ vertical: "top", horizontal: "center" }}
         open={open}
-        autoHideDuration={500}
+        autoHideDuration={750}
         onClose={handleSnackBarClose}
       >
         <Alert onClose={handleSnackBarClose} severity={alertSeverity}>
