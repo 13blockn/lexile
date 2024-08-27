@@ -233,6 +233,7 @@ const Board: React.FC<BoardProps> = ({
                   setColIndex(colIndex);
                 }}
                 onTouchEnd={() => {
+                  navigator.vibrate(200);
                   handleTileClick(rowIndex, colIndex);
                   setRowIndex(rowIndex);
                   setColIndex(colIndex);
