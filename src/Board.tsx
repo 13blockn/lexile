@@ -5,7 +5,7 @@ import "./Board.css";
 import { MoveValidator } from "./algorithm/MoveValidator";
 import { Coordinate } from "./models/Coordinate";
 import { useTheme } from "@mui/material/styles";
-import { Box } from "@mui/material";
+import { Alert, Box, Snackbar } from "@mui/material";
 
 interface BoardProps {
   board: BoardModel;
@@ -35,9 +35,22 @@ const Board: React.FC<BoardProps> = ({
   const [rowIdx, setRowIndex] = useState<number>();
   const [colIdx, setColIndex] = useState<number>();
 
+  const [open, setOpen] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertSeverity, setAlertSeverity] = useState<"success" | "error">(
+    "success"
+  );
+
   const boardLetters = board.getLetters();
   const boardSize = boardLetters.length;
 
+  const handleSnackBarClose = (event?: any, reason?: string) => {
+    if (reason === "clickaway") {
+      console.log(event);
+      return;
+    }
+    setOpen(false);
+  };
   const handleTileClick = (row: number, col: number) => {
     if (isSearching) {
       setSubmissionMethod(SubmissionMethod.CLICK);
@@ -123,8 +136,17 @@ const Board: React.FC<BoardProps> = ({
         }
         return prev;
       });
+      setAlertMessage("Nice find!");
+      setAlertSeverity("success");
+      setOpen(true);
+    } else {
+      // Show failure alert
+      setAlertMessage("Word not found. Try again!");
+      setAlertSeverity("error");
+      setOpen(true);
     }
 
+    setTimeout(() => setOpen(false), 750);
     // Keep the current word for faster solving
     if (continueSolving) {
       return;
@@ -148,7 +170,7 @@ const Board: React.FC<BoardProps> = ({
 
         if (
           target &&
-          target.classList.contains('board-text') &&
+          target.classList.contains("board-text") &&
           target.dataset.row !== undefined &&
           target.dataset.col !== undefined
         ) {
@@ -160,7 +182,10 @@ const Board: React.FC<BoardProps> = ({
           const centerX = rect.left + rect.width / 2;
           const centerY = rect.top + rect.height / 2;
 
-          const distance = Math.sqrt(Math.pow(touch.clientX - centerX, 2) + Math.pow(touch.clientY - centerY, 2));
+          const distance = Math.sqrt(
+            Math.pow(touch.clientX - centerX, 2) +
+              Math.pow(touch.clientY - centerY, 2)
+          );
 
           const threshold = 20;
 
@@ -233,7 +258,6 @@ const Board: React.FC<BoardProps> = ({
                   setColIndex(colIndex);
                 }}
                 onTouchEnd={() => {
-                  navigator.vibrate(200);
                   handleTileClick(rowIndex, colIndex);
                   setRowIndex(rowIndex);
                   setColIndex(colIndex);
@@ -251,6 +275,16 @@ const Board: React.FC<BoardProps> = ({
           ))}
         </div>
       ))}
+      <Snackbar
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        open={open}
+        autoHideDuration={500}
+        onClose={handleSnackBarClose}
+      >
+        <Alert onClose={handleSnackBarClose} severity={alertSeverity}>
+          {alertMessage}
+        </Alert>
+      </Snackbar>
     </div>
   );
 };
