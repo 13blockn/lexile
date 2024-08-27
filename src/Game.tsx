@@ -8,7 +8,7 @@ import { PuzzleSolver } from "./algorithm/PuzzleSolver";
 import { MoveValidator } from "./algorithm/MoveValidator";
 import { WordValidator } from "./algorithm/WordValidator";
 import EndScreen from "./EndScreen";
-import { Box, Button, Typography, Popover } from "@mui/material";
+import { Box, Button, Typography, Popover, useMediaQuery } from "@mui/material";
 
 const PUZZLE_SIZE = 5;
 
@@ -58,6 +58,10 @@ function App() {
     const remainingSeconds = seconds % 60;
     return `${minutes}:${remainingSeconds < 10 ? "0" : ""}${remainingSeconds}`;
   };
+
+  const isSmallScreen = useMediaQuery((theme: any) =>
+    theme.breakpoints.down("sm")
+  );
 
   let puzzleSolver;
 
@@ -159,13 +163,30 @@ function App() {
         }}
       >
         <Typography sx={{ p: 2 }}>
-          This game is similar to Boggle, where you have a board filled with
-          letters. <br />
-          You can connect letters in any direction, but you cannot use the same
-          letter twice. <br />
-          To start your word, left click on a letter. From there, you can drag
-          your mouse. <br />
-          When you're ready to submit your word, press enter or tap on the tile!
+          {isSmallScreen ? (
+            <>
+              This game is similar to Boggle, where you have a board filled with
+              letters. <br />
+              You can connect letters in any direction (including diagonals),
+              but you cannot use the same letter twice. <br />
+              To start your word, touch a letter. From there, start dragging
+              your finger along the screen. <br />
+              When you're ready to submit your word, release your finger from
+              the screen.
+            </>
+          ) : (
+            <>
+              This game is similar to Boggle, where you have a board filled with
+              letters. <br />
+              You can connect letters in any direction (including diagonals),
+              but you cannot use the same letter twice. <br />
+              To start your word, left click on a letter. From there, you can
+              drag your mouse. <br />
+              When you're ready to submit your word, press enter or tap on the
+              tile! Press space if you want to submit your word, but keep all of
+              the letters active.
+            </>
+          )}
         </Typography>
       </Popover>
       <Box
@@ -179,7 +200,7 @@ function App() {
           <Box
             sx={{
               flex: { xs: 1, sm: 3 },
-              padding: '2em 0em',
+              padding: "2em 0em",
             }}
           >
             <Board
