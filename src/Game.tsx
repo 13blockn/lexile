@@ -213,14 +213,14 @@ function App() {
               sx={{ display: "flex", gap: "10px", justifyContent: "center" }}
             >
               <Button variant="contained" sx={{ mt: 1 }} onClick={shuffleBoard}>
-                Shuffle board
+                New Board
               </Button>
               <Button
                 variant="contained"
                 sx={{ mt: 1 }}
                 onClick={() => setGameOver(true)}
               >
-                Retire early
+                Retire Early
               </Button>
             </Box>
             <Typography className="subtitle">
