@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import "./App.css";
 import { LetterShuffler } from "./algorithm/LetterShuffler";
 import Board from "./Board";
@@ -42,6 +42,7 @@ const Game: React.FC<GameProps> = ({ isDaily }) => {
   const [moveValidator, setMoveValidator] = useState<MoveValidator>();
   const [dictionary, setDictionary] = useState<string[]>([]);
 
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const boardSetup = searchParams.get("board");
 
@@ -49,8 +50,11 @@ const Game: React.FC<GameProps> = ({ isDaily }) => {
     if (boardSetup) {
       setLetters(BoardModel.mapStringToBoard(boardSetup, PUZZLE_SIZE));
     } else {
-      console.log(`Might be daily game: ${isDaily}`);
-      setLetters(letterShuffler.dailyShuffle());
+      if (isDaily) {
+        setLetters(letterShuffler.dailyShuffle());
+      } else {
+        setLetters(letterShuffler.shuffle());
+      }
     }
   }, []);
 
@@ -139,6 +143,7 @@ const Game: React.FC<GameProps> = ({ isDaily }) => {
 
   const handleRestart = () => {
     setGameOver(false);
+    navigate("/game");
     resetBoard();
   };
 
@@ -263,9 +268,17 @@ const Game: React.FC<GameProps> = ({ isDaily }) => {
               <Box
                 sx={{ display: "flex", gap: "10px", justifyContent: "center" }}
               >
-                <Button variant="contained" sx={{ mt: 1 }} onClick={resetBoard}>
-                  New Board
-                </Button>
+                {!isDaily ? (
+                  <Button
+                    variant="contained"
+                    sx={{ mt: 1 }}
+                    onClick={resetBoard}
+                  >
+                    New Board
+                  </Button>
+                ) : (
+                  <></>
+                )}
                 <Button
                   variant="contained"
                   sx={{ mt: 1 }}
