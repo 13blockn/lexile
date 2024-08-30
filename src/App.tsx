@@ -11,6 +11,7 @@ import {
   FormControlLabel,
 } from "@mui/material";
 import Game from "./Game";
+import { Analytics } from "@vercel/analytics/react"
 
 const App: React.FC = () => {
   const [darkMode, setDarkMode] = useState(true);
@@ -104,7 +105,7 @@ const App: React.FC = () => {
               control={
                 <Switch checked={darkMode} onChange={handleThemeToggle} />
               }
-              label={darkMode ? "Dark Mode (WIP)" : "Light Mode (WIP)"}
+              label={darkMode ? "Dark Mode" : "Light Mode"}
               style={{ marginLeft: "auto" }}
             />
           </Box>
@@ -124,6 +125,7 @@ const App: React.FC = () => {
           </Box>
         </Box>
       </Router>
+      <Analytics />
     </ThemeProvider>
   );
 };
