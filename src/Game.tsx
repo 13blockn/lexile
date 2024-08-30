@@ -126,7 +126,9 @@ const Game: React.FC<GameProps> = ({ isDaily }) => {
 
     const tempBoard = new BoardModel(letters);
     setBoard(tempBoard);
-    setSearchParams({ board: tempBoard.printBoard() });
+    if (!isDaily) {
+      setSearchParams({ board: tempBoard.printBoard() });
+    }
   }, [letters, dictionary]);
 
   const resetBoard = useCallback(() => {
