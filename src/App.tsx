@@ -70,10 +70,19 @@ const App: React.FC = () => {
                       variant="contained"
                       color="primary"
                       component={Link}
+                      to="/daily"
+                      style={{ marginTop: "20px" }}
+                    >
+                      Play Daily
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      color="secondary"
+                      component={Link}
                       to="/game"
                       style={{ marginTop: "20px" }}
                     >
-                      Play
+                      Play Endless
                     </Button>
                   </>
                 }

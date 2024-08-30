@@ -67,7 +67,7 @@ const Game: React.FC<GameProps> = ({ isDaily }) => {
     } else {
       setGameOver(true);
     }
-  }, [timeLeft, instructionsModalOpen]);
+  }, [timeLeft, instructionsModalOpen, startModalOpen]);
 
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
