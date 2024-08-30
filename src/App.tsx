@@ -78,7 +78,8 @@ const App: React.FC = () => {
                   </>
                 }
               />
-              <Route path="/game" element={<Game />} />
+              <Route path="/game" element={<Game isDaily={false} />} />
+              <Route path="/daily" element={<Game isDaily={true} />} />
             </Routes>
           </Container>
           <Box

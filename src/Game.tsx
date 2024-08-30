@@ -22,7 +22,11 @@ import {
 
 const PUZZLE_SIZE = 5;
 
-function App() {
+interface GameProps {
+  isDaily: boolean;
+}
+
+const Game: React.FC<GameProps> = ({ isDaily }) => {
   const letterShuffler = new LetterShuffler(PUZZLE_SIZE);
   const [letters, setLetters] = useState<string[][]>(letterShuffler.shuffle());
   const [wordValidator, setWordValidator] = useState<WordValidator | null>(
@@ -45,6 +49,7 @@ function App() {
     if (boardSetup) {
       setLetters(BoardModel.mapStringToBoard(boardSetup, PUZZLE_SIZE));
     } else {
+      console.log(`Might be daily game: ${isDaily}`);
       setLetters(letterShuffler.dailyShuffle());
     }
   }, []);
@@ -214,7 +219,7 @@ function App() {
         <DialogContent>
           <p>
             Click "Play Now" to begin playing! <br /> Words must be 4 letters or
-            longer. You have 3 minutes! <br /> There are {solution!.size} words
+            longer. You have 3 minutes! <br /> There are {solution?.size} words
             to find
           </p>
         </DialogContent>
@@ -235,45 +240,49 @@ function App() {
         }}
       >
         <Box sx={{ flex: 1, display: { xs: "none", sm: "block" } }} />
-        {wordValidator && board && moveValidator && (
-          startModalOpen ? <></> :
-          <Box
-            sx={{
-              flex: { xs: 1, sm: 3 },
-              padding: "2em 0em",
-            }}
-          >
-            <Board
-              board={board}
-              wordValidator={wordValidator}
-              setUserWords={setUserWords}
-              moveValidator={moveValidator}
-            />
+        {wordValidator &&
+          board &&
+          moveValidator &&
+          (startModalOpen ? (
+            <></>
+          ) : (
             <Box
-              sx={{ display: "flex", gap: "10px", justifyContent: "center" }}
+              sx={{
+                flex: { xs: 1, sm: 3 },
+                padding: "2em 0em",
+              }}
             >
-              <Button variant="contained" sx={{ mt: 1 }} onClick={resetBoard}>
-                New Board
-              </Button>
-              <Button
-                variant="contained"
-                sx={{ mt: 1 }}
-                onClick={() => setGameOver(true)}
+              <Board
+                board={board}
+                wordValidator={wordValidator}
+                setUserWords={setUserWords}
+                moveValidator={moveValidator}
+              />
+              <Box
+                sx={{ display: "flex", gap: "10px", justifyContent: "center" }}
               >
-                Retire Early
-              </Button>
+                <Button variant="contained" sx={{ mt: 1 }} onClick={resetBoard}>
+                  New Board
+                </Button>
+                <Button
+                  variant="contained"
+                  sx={{ mt: 1 }}
+                  onClick={() => setGameOver(true)}
+                >
+                  Retire Early
+                </Button>
+              </Box>
+              <Typography className="subtitle">
+                Total Words: {solution?.size}
+              </Typography>
+              <Typography className="subtitle">
+                Found Words: {userWords.length}
+              </Typography>
+              <Typography className="subtitle">
+                Time Left: {formatTime(timeLeft)}
+              </Typography>
             </Box>
-            <Typography className="subtitle">
-              Total Words: {solution?.size}
-            </Typography>
-            <Typography className="subtitle">
-              Found Words: {userWords.length}
-            </Typography>
-            <Typography className="subtitle">
-              Time Left: {formatTime(timeLeft)}
-            </Typography>
-          </Box>
-        )}
+          ))}
         <Box
           sx={{
             maxHeight: "600px",
@@ -292,6 +301,6 @@ function App() {
       </Box>
     </div>
   );
-}
+};
 
-export default App;
+export default Game;
