@@ -8,7 +8,17 @@ import { PuzzleSolver } from "./algorithm/PuzzleSolver";
 import { MoveValidator } from "./algorithm/MoveValidator";
 import { WordValidator } from "./algorithm/WordValidator";
 import EndScreen from "./EndScreen";
-import { Box, Button, Typography, Popover, useMediaQuery } from "@mui/material";
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Typography,
+  Popover,
+  useMediaQuery,
+} from "@mui/material";
 
 const PUZZLE_SIZE = 5;
 
@@ -20,8 +30,9 @@ function App() {
   );
   const [userWords, setUserWords] = useState<string[]>([]);
   const [solution, setSolution] = useState<Set<string>>();
-  const [modalOpen, setModalOpen] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(180);
+  const [instructionsModalOpen, setModalOpen] = useState(false);
+  const [startModalOpen, setStartModalOpen] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(181);
   const [gameOver, setGameOver] = useState(false);
   const [board, setBoard] = useState<BoardModel | null>();
   const [moveValidator, setMoveValidator] = useState<MoveValidator>();
@@ -39,7 +50,7 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (modalOpen) {
+    if (instructionsModalOpen || startModalOpen) {
       return; // Do nothing if the modal is open, effectively pausing the timer
     }
     if (timeLeft > 0) {
@@ -51,7 +62,7 @@ function App() {
     } else {
       setGameOver(true);
     }
-  }, [timeLeft, modalOpen]);
+  }, [timeLeft, instructionsModalOpen]);
 
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -99,6 +110,7 @@ function App() {
       setWordValidator(tempWordValidator);
       puzzleSolver.searchBoard(board!);
       setSolution(puzzleSolver.getWords());
+      setStartModalOpen(true);
     }
   }, [moveValidator]);
 
@@ -112,16 +124,15 @@ function App() {
     setSearchParams({ board: tempBoard.printBoard() });
   }, [letters, dictionary]);
 
-  // Shuffle the board and update the state
-  const shuffleBoard = useCallback(() => {
+  const resetBoard = useCallback(() => {
     setLetters(letterShuffler.shuffle());
-    setTimeLeft(180);
+    setTimeLeft(181);
     setUserWords([]);
   }, [letterShuffler]);
 
   const handleRestart = () => {
     setGameOver(false);
-    shuffleBoard();
+    resetBoard();
   };
 
   if (gameOver) {
@@ -137,7 +148,9 @@ function App() {
   return (
     <div
       style={{
-        backgroundColor: modalOpen ? "rgba(0,0,0,0.3)" : "transparent",
+        backgroundColor: instructionsModalOpen
+          ? "rgba(0,0,0,0.3)"
+          : "transparent",
         transition: "background-color 0.3s ease",
       }}
     >
@@ -151,7 +164,7 @@ function App() {
       </Button>
       <Popover
         id={"rules-modal"}
-        open={modalOpen}
+        open={instructionsModalOpen}
         onClose={() => setModalOpen(false)}
         anchorOrigin={{
           vertical: "center",
@@ -168,7 +181,8 @@ function App() {
               This game is similar to Boggle, where you have a board filled with
               letters. <br />
               You can connect letters in any direction (including diagonals),
-              but you cannot use the same letter twice. <br />
+              but you cannot use the same letter twice. Your words must be 4
+              letters or longer <br />
               To start your word, touch a letter. From there, start dragging
               your finger along the screen. <br />
               When you're ready to submit your word, release your finger from
@@ -179,7 +193,8 @@ function App() {
               This game is similar to Boggle, where you have a board filled with
               letters. <br />
               You can connect letters in any direction (including diagonals),
-              but you cannot use the same letter twice. <br />
+              but you cannot use the same letter twice. Your words must be 4
+              letters or longer <br />
               To start your word, left click on a letter. From there, you can
               drag your mouse. <br />
               When you're ready to submit your word, press enter or tap on the
@@ -189,6 +204,30 @@ function App() {
           )}
         </Typography>
       </Popover>
+      <Dialog
+        open={startModalOpen}
+        onClose={() => setStartModalOpen(false)}
+        disableEscapeKeyDown
+        aria-labelledby="start-dialog-title"
+      >
+        <DialogTitle id="start-dialog-title">New game</DialogTitle>
+        <DialogContent>
+          <p>
+            Click "Play Now" to begin playing! <br /> Words must be 4 letters or
+            longer. You have 3 minutes! <br /> There are {solution!.size} words
+            to find
+          </p>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setStartModalOpen(false)}
+            color="primary"
+            variant="contained"
+          >
+            Play Now
+          </Button>
+        </DialogActions>
+      </Dialog>
       <Box
         sx={{
           display: "flex",
@@ -197,6 +236,7 @@ function App() {
       >
         <Box sx={{ flex: 1, display: { xs: "none", sm: "block" } }} />
         {wordValidator && board && moveValidator && (
+          startModalOpen ? <></> :
           <Box
             sx={{
               flex: { xs: 1, sm: 3 },
@@ -212,7 +252,7 @@ function App() {
             <Box
               sx={{ display: "flex", gap: "10px", justifyContent: "center" }}
             >
-              <Button variant="contained" sx={{ mt: 1 }} onClick={shuffleBoard}>
+              <Button variant="contained" sx={{ mt: 1 }} onClick={resetBoard}>
                 New Board
               </Button>
               <Button
