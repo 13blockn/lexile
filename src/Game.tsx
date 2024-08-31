@@ -41,6 +41,7 @@ const Game: React.FC<GameProps> = ({ isDaily }) => {
   const [board, setBoard] = useState<BoardModel | null>();
   const [moveValidator, setMoveValidator] = useState<MoveValidator>();
   const [dictionary, setDictionary] = useState<string[]>([]);
+  //const [alreadyPlayed, setAlreadyPlayed] = useState(false);
 
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -51,6 +52,15 @@ const Game: React.FC<GameProps> = ({ isDaily }) => {
       setLetters(BoardModel.mapStringToBoard(boardSetup, PUZZLE_SIZE));
     } else {
       if (isDaily) {
+        const today = new Date().toISOString().split("T")[0]; // Get today's date in YYYY-MM-DD format
+        const playedDate = localStorage.getItem("dailyGamePlayed");
+        const userWordsDaily = localStorage.getItem("userWordsDaily");
+
+        if (playedDate === today && userWordsDaily) {
+          const tempWords: string[] = JSON.parse(userWordsDaily);
+          setUserWords(tempWords);
+          setGameOver(true);
+        }
         setLetters(letterShuffler.dailyShuffle());
       } else {
         setLetters(letterShuffler.shuffle());
@@ -147,12 +157,13 @@ const Game: React.FC<GameProps> = ({ isDaily }) => {
     resetBoard();
   };
 
-  if (gameOver) {
+  if (gameOver && solution) {
     return (
       <EndScreen
         userWords={userWords}
-        solution={solution!}
+        solution={solution}
         onRestart={handleRestart}
+        isDaily={isDaily}
       />
     );
   }

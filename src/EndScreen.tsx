@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import {
   Button,
@@ -20,17 +20,17 @@ interface EndScreenProps {
   userWords: string[];
   solution: Set<string>;
   onRestart: () => void;
+  isDaily: boolean;
 }
 
-// Need to show all words on non-daily challenge
 const EndScreen: React.FC<EndScreenProps> = ({
   userWords,
   solution,
   onRestart,
+  isDaily,
 }) => {
   const [open, setOpen] = useState(false);
   const location = useLocation();
-  // Sort solution by length (longest to shortest) and then alphabetically
   const sortedSolution = [...solution].sort(
     (a, b) => b.length - a.length || a.localeCompare(b)
   );
@@ -40,9 +40,21 @@ const EndScreen: React.FC<EndScreenProps> = ({
   userWords.forEach((word: string) => {
     userScore += moveScorer.scoreWord(word);
   });
+
+  // I only should store words from the daily game
+  useEffect(() => {
+    if (isDaily) {
+      const today = new Date().toISOString().split("T")[0];
+      localStorage.setItem("dailyGamePlayed", today);
+      localStorage.setItem("userWordsDaily", JSON.stringify(userWords));
+      localStorage.setItem("userScoreDaily", userScore.toString());
+    }
+  }, [userScore, userWords]);
+
   let puzzleScore = 0;
+  const puzzleScorer = new MoveScorer();
   sortedSolution.forEach((word: string) => {
-    puzzleScore += moveScorer.scoreWord(word);
+    puzzleScore += puzzleScorer.scoreWord(word);
   });
 
   const baseUrl = `${window.location.origin}${location.pathname}${location.search}`;
@@ -72,6 +84,7 @@ const EndScreen: React.FC<EndScreenProps> = ({
     >
       <Typography variant="h4">Time's Up!</Typography>
       <Typography variant="h5">
+        RANK: {moveScorer.getRank(puzzleScore)} <br />
         You found {userWords.length} out of {solution.size} words. <br />
         You scored {userScore} points out of {puzzleScore}
       </Typography>
