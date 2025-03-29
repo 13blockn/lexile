@@ -232,12 +232,15 @@ const Board: React.FC<BoardProps> = ({
               sx={{
                 width: { xs: "63px", sm: "100px" },
                 height: { xs: "63px", sm: "100px" },
-                border: `1px solid ${theme.palette.divider}`,
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
-                backgroundColor: theme.palette.background.default,
+                backgroundColor: theme.palette.background.paper,
                 color: theme.palette.text.primary,
+                padding: "4px",
+                margin: "4px",
+                borderRadius: "12px",
+                transition: "all 0.2s ease",
               }}
             >
               <div
@@ -262,7 +265,6 @@ const Board: React.FC<BoardProps> = ({
                   setColIndex(colIndex);
                 }}
                 style={{
-                  color: theme.palette.text.primary,
                   touchAction: "none",
                 }}
               >
@@ -274,16 +276,6 @@ const Board: React.FC<BoardProps> = ({
           ))}
         </div>
       ))}
-      <Snackbar
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
-        open={open}
-        autoHideDuration={750}
-        onClose={handleSnackBarClose}
-      >
-        <Alert onClose={handleSnackBarClose} severity={alertSeverity}>
-          {alertMessage}
-        </Alert>
-      </Snackbar>
     </div>
   );
 };
