@@ -276,6 +276,16 @@ const Board: React.FC<BoardProps> = ({
           ))}
         </div>
       ))}
+      <Snackbar
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        open={open}
+        autoHideDuration={750}
+        onClose={handleSnackBarClose}
+      >
+        <Alert onClose={handleSnackBarClose} severity={alertSeverity}>
+          {alertMessage}
+        </Alert>
+      </Snackbar>
     </div>
   );
 };
