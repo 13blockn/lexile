@@ -5,7 +5,8 @@ import "./Board.css";
 import { MoveValidator } from "./algorithm/MoveValidator";
 import { Coordinate } from "./models/Coordinate";
 import { useTheme } from "@mui/material/styles";
-import { Alert, Box, Snackbar } from "@mui/material";
+import { Alert, Box, Paper, Snackbar } from "@mui/material";
+import { getWordLengthMessage } from "./utils/messages";
 
 interface BoardProps {
   board: BoardModel;
@@ -132,7 +133,7 @@ const Board: React.FC<BoardProps> = ({
     if (isValidWord) {
       setUserWords((prev) => {
         if (!prev.includes(highlightedWord)) {
-          setAlertMessage("Nice find!");
+          setAlertMessage(getWordLengthMessage(highlightedWord.length));
           return [highlightedWord, ...prev];
         }
         setAlertMessage("Word already found. Try again!");
@@ -221,72 +222,83 @@ const Board: React.FC<BoardProps> = ({
   const theme = useTheme();
 
   return (
-    <div className="board">
-      {Array.from({ length: boardSize }).map((_, rowIndex) => (
-        <div key={rowIndex} className="board-row">
-          {Array.from({ length: boardSize }).map((_, colIndex) => (
-            <Box
-              key={colIndex}
-              data-row={rowIndex}
-              data-col={colIndex}
-              sx={{
-                width: { xs: "63px", sm: "100px" },
-                height: { xs: "63px", sm: "100px" },
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                backgroundColor: theme.palette.background.paper,
-                color: theme.palette.text.primary,
-                padding: "4px",
-                margin: "4px",
-                borderRadius: "12px",
-                transition: "all 0.2s ease",
-              }}
-            >
-              <div
-                id={`board-text-${rowIndex}-${colIndex}`}
-                className="board-text"
+    <Paper
+      elevation={3}
+      sx={{
+        padding: { xs: 2, sm: 4 },
+        borderRadius: 3,
+        backgroundColor: theme.palette.background.default,
+        maxWidth: 'fit-content',
+        margin: '0 auto',
+      }}
+    >
+      <div className="board">
+        {Array.from({ length: boardSize }).map((_, rowIndex) => (
+          <div key={rowIndex} className="board-row">
+            {Array.from({ length: boardSize }).map((_, colIndex) => (
+              <Box
+                key={colIndex}
                 data-row={rowIndex}
                 data-col={colIndex}
-                onPointerEnter={() => handlePointerEnter(rowIndex, colIndex)}
-                onClick={() => handleTileClick(rowIndex, colIndex)}
-                onTouchStart={() => {
-                  handleTileClick(rowIndex, colIndex);
-                  setRowIndex(rowIndex);
-                  setColIndex(colIndex);
-                }}
-                onTouchMove={() => {
-                  setRowIndex(rowIndex);
-                  setColIndex(colIndex);
-                }}
-                onTouchEnd={() => {
-                  handleTileClick(rowIndex, colIndex);
-                  setRowIndex(rowIndex);
-                  setColIndex(colIndex);
-                }}
-                style={{
-                  touchAction: "none",
+                sx={{
+                  width: { xs: "63px", sm: "100px" },
+                  height: { xs: "63px", sm: "100px" },
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  backgroundColor: theme.palette.background.paper,
+                  color: theme.palette.text.primary,
+                  padding: "4px",
+                  margin: "4px",
+                  borderRadius: "12px",
+                  transition: "all 0.2s ease",
                 }}
               >
-                {boardLetters[rowIndex][colIndex] === "QU"
-                  ? "Qu"
-                  : boardLetters[rowIndex][colIndex]}
-              </div>
-            </Box>
-          ))}
-        </div>
-      ))}
-      <Snackbar
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
-        open={open}
-        autoHideDuration={750}
-        onClose={handleSnackBarClose}
-      >
-        <Alert onClose={handleSnackBarClose} severity={alertSeverity}>
-          {alertMessage}
-        </Alert>
-      </Snackbar>
-    </div>
+                <div
+                  id={`board-text-${rowIndex}-${colIndex}`}
+                  className="board-text"
+                  data-row={rowIndex}
+                  data-col={colIndex}
+                  onPointerEnter={() => handlePointerEnter(rowIndex, colIndex)}
+                  onClick={() => handleTileClick(rowIndex, colIndex)}
+                  onTouchStart={() => {
+                    handleTileClick(rowIndex, colIndex);
+                    setRowIndex(rowIndex);
+                    setColIndex(colIndex);
+                  }}
+                  onTouchMove={() => {
+                    setRowIndex(rowIndex);
+                    setColIndex(colIndex);
+                  }}
+                  onTouchEnd={() => {
+                    handleTileClick(rowIndex, colIndex);
+                    setRowIndex(rowIndex);
+                    setColIndex(colIndex);
+                  }}
+                  style={{
+                    touchAction: "none",
+                  }}
+                >
+                  {boardLetters[rowIndex][colIndex] === "QU"
+                    ? "Qu"
+                    : boardLetters[rowIndex][colIndex]}
+                </div>
+              </Box>
+            ))}
+          </div>
+        ))}
+        <Snackbar
+          anchorOrigin={{ vertical: "top", horizontal: "center" }}
+          open={open}
+          autoHideDuration={750}
+          onClose={handleSnackBarClose}
+        >
+          <Alert onClose={handleSnackBarClose} severity={alertSeverity}>
+            {alertMessage}
+          </Alert>
+        </Snackbar>
+      </div>
+    </Paper>
   );
 };
 
