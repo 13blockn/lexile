@@ -8,6 +8,8 @@ import { PuzzleSolver } from "./algorithm/PuzzleSolver";
 import { MoveValidator } from "./algorithm/MoveValidator";
 import { WordValidator } from "./algorithm/WordValidator";
 import EndScreen from "./EndScreen";
+import { Coordinate } from "./models/Coordinate";
+import { Word } from "./models/Word";
 import {
   Box,
   Button,
@@ -42,6 +44,9 @@ const Game: React.FC<GameProps> = ({ isDaily, isTempus = false }) => {
   const [board, setBoard] = useState<BoardModel | null>();
   const [moveValidator, setMoveValidator] = useState<MoveValidator>();
   const [dictionary, setDictionary] = useState<string[]>([]);
+  const [keyboardInput, setKeyboardInput] = useState<string>("");
+  const [validPaths, setValidPaths] = useState<Coordinate[][]>([]);
+  const [activeTiles, setActiveTiles] = useState<Set<string>>(new Set());
   //const [alreadyPlayed, setAlreadyPlayed] = useState(false);
 
   const navigate = useNavigate();
@@ -54,11 +59,11 @@ const Game: React.FC<GameProps> = ({ isDaily, isTempus = false }) => {
     } else {
       if (isTempus) {
         const tempusBoard = [
-          ['T', 'E', 'U', 'R', 'O'],
-          ['M', 'N', 'S', 'A', 'L'],
-          ['H', 'T', 'S', 'T', 'O'],
-          ['L', 'A', 'I', 'G', 'T'],
-          ['H', 'E', 'Y', 'N', 'I']
+          ["T", "E", "U", "R", "O"],
+          ["M", "N", "S", "A", "L"],
+          ["H", "T", "S", "T", "O"],
+          ["L", "A", "I", "G", "T"],
+          ["H", "E", "Y", "N", "I"],
         ];
         setLetters(tempusBoard);
       } else if (isDaily) {
@@ -159,13 +164,211 @@ const Game: React.FC<GameProps> = ({ isDaily, isTempus = false }) => {
     setLetters(letterShuffler.shuffle());
     setTimeLeft(181);
     setUserWords([]);
+    setKeyboardInput("");
+    setValidPaths([]);
+    setActiveTiles(new Set());
   }, [letterShuffler]);
+
+  // Find all valid paths that can be formed with the current keyboard input
+  const findValidPaths = useCallback(
+    (input: string): Coordinate[][] => {
+      if (!board || !moveValidator || input.length === 0) {
+        return [];
+      }
+
+      const paths: Coordinate[][] = [];
+      const letters = input.toUpperCase();
+
+      // Start with all positions of the first letter
+      const firstLetterPositions = board.getTileLocations(letters[0]);
+
+      // For each starting position, try to build paths
+      for (const startPos of firstLetterPositions) {
+        const word = new Word();
+        word.appendCharacter(new Coordinate(startPos.xCoord, startPos.yCoord));
+
+        const completePaths = buildPathsRecursively(
+          word,
+          letters,
+          1,
+          moveValidator,
+          board
+        );
+        paths.push(...completePaths);
+      }
+
+      return paths;
+    },
+    [board, moveValidator]
+  );
+
+  // Recursive function to build valid paths
+  const buildPathsRecursively = (
+    currentWord: Word,
+    targetLetters: string,
+    index: number,
+    validator: MoveValidator,
+    boardModel: BoardModel
+  ): Coordinate[][] => {
+    // If we've matched all letters, return the current path
+    if (index >= targetLetters.length) {
+      return [
+        currentWord.path.map(
+          (coord) => new Coordinate(coord.xCoord, coord.yCoord)
+        ),
+      ];
+    }
+
+    const paths: Coordinate[][] = [];
+    const nextLetter = targetLetters[index];
+
+    // Get all valid next moves for this letter
+    const validMoves = validator.getValidMoves(nextLetter, currentWord);
+
+    for (const move of validMoves) {
+      const newWord = new Word(currentWord);
+      newWord.appendCharacter(new Coordinate(move.xCoord, move.yCoord));
+
+      // Recursively build paths from this position
+      const subPaths = buildPathsRecursively(
+        newWord,
+        targetLetters,
+        index + 1,
+        validator,
+        boardModel
+      );
+      paths.push(...subPaths);
+    }
+
+    return paths;
+  };
 
   const handleRestart = () => {
     setGameOver(false);
     navigate("/game");
     resetBoard();
   };
+
+  // Handle keyboard input for typing letters
+  const handleKeyboardInput = useCallback(
+    (event: KeyboardEvent) => {
+      // Ignore input if game is over or modals are open
+      if (gameOver || instructionsModalOpen || startModalOpen) {
+        return;
+      }
+
+      const key = event.key.toUpperCase();
+
+      // Handle Enter key to submit word and clear input
+      if (event.key === "Enter") {
+        if (keyboardInput.length >= 4 && validPaths.length > 0) {
+          // Submit the first valid path found
+          const firstPath = validPaths[0];
+          const word = firstPath.map((coord) => board!.getTile(coord)).join("");
+
+          if (wordValidator?.check(word)) {
+            setUserWords((prev) => {
+              if (!prev.includes(word)) {
+                return [word, ...prev];
+              }
+              return prev;
+            });
+          }
+        }
+
+        // Clear keyboard input after submission
+        setKeyboardInput("");
+        setValidPaths([]);
+        setActiveTiles(new Set());
+        return;
+      }
+
+      // Handle Space key to submit word but keep input for similar words
+      if (event.key === " ") {
+        event.preventDefault(); // Prevent page scrolling
+
+        if (keyboardInput.length >= 4 && validPaths.length > 0) {
+          // Submit the first valid path found
+          const firstPath = validPaths[0];
+          const word = firstPath.map((coord) => board!.getTile(coord)).join("");
+
+          if (wordValidator?.check(word)) {
+            setUserWords((prev) => {
+              if (!prev.includes(word)) {
+                return [word, ...prev];
+              }
+              return prev;
+            });
+          }
+        }
+
+        // Keep the keyboard input active for similar words (don't clear)
+        return;
+      }
+
+      // Handle Backspace
+      if (event.key === "Backspace") {
+        const newInput = keyboardInput.slice(0, -1);
+        setKeyboardInput(newInput);
+
+        const newPaths = findValidPaths(newInput);
+        setValidPaths(newPaths);
+
+        // Update active tiles
+        const newActiveTiles = new Set<string>();
+        newPaths.forEach((path) => {
+          path.forEach((coord) => {
+            newActiveTiles.add(`${coord.xCoord}-${coord.yCoord}`);
+          });
+        });
+        setActiveTiles(newActiveTiles);
+        return;
+      }
+
+      // Handle letter input (A-Z)
+      if (key.match(/^[A-Z]$/) && keyboardInput.length < 25) {
+        // Reasonable max length
+        const newInput = keyboardInput + key;
+
+        // Check if this new input would create any valid paths
+        const newPaths = findValidPaths(newInput);
+
+        // Only update the input if there are valid paths for the new input
+        if (newPaths.length > 0) {
+          setKeyboardInput(newInput);
+          setValidPaths(newPaths);
+
+          // Update active tiles based on valid paths
+          const newActiveTiles = new Set<string>();
+          newPaths.forEach((path) => {
+            path.forEach((coord) => {
+              newActiveTiles.add(`${coord.xCoord}-${coord.yCoord}`);
+            });
+          });
+          setActiveTiles(newActiveTiles);
+        }
+        // If no valid paths exist for the new input, ignore the keystroke
+      }
+    },
+    [
+      keyboardInput,
+      validPaths,
+      gameOver,
+      instructionsModalOpen,
+      startModalOpen,
+      board,
+      wordValidator,
+      findValidPaths,
+    ]
+  );
+
+  // Add keyboard event listener
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyboardInput);
+    return () => {
+      window.removeEventListener("keydown", handleKeyboardInput);
+    };
+  }, [handleKeyboardInput]);
 
   if (gameOver && solution) {
     return (
@@ -219,7 +422,9 @@ const Game: React.FC<GameProps> = ({ isDaily, isTempus = false }) => {
               To start your word, touch a letter. From there, start dragging
               your finger along the screen. <br />
               When you're ready to submit your word, release your finger from
-              the screen.
+              the screen. <br />
+              Alternatively, you can type letters on your keyboard - valid paths
+              will be highlighted, and press Enter to submit.
             </>
           ) : (
             <>
@@ -232,7 +437,9 @@ const Game: React.FC<GameProps> = ({ isDaily, isTempus = false }) => {
               drag your mouse. <br />
               When you're ready to submit your word, press enter or tap on the
               tile! Press space if you want to submit your word, but keep all of
-              the letters active.
+              the letters active. <br />
+              Alternatively, you can type letters on your keyboard - valid paths
+              will be highlighted, and press Enter to submit.
             </>
           )}
         </Typography>
@@ -243,20 +450,23 @@ const Game: React.FC<GameProps> = ({ isDaily, isTempus = false }) => {
         disableEscapeKeyDown
         aria-labelledby="start-dialog-title"
       >
-        <DialogTitle id="start-dialog-title">{ isTempus ? "Goodbye for now!" : "New game"}</DialogTitle>
+        <DialogTitle id="start-dialog-title">
+          {isTempus ? "Goodbye for now!" : "New game"}
+        </DialogTitle>
         <DialogContent>
           <p>
             {isTempus ? (
               <>
-                This is a Tempus specific version of Boggle, so expect some neuro words to be sprinkled in. No proper nouns though. <br />
+                This is a Tempus specific version of Boggle, so expect some
+                neuro words to be sprinkled in. No proper nouns though. <br />
                 Words must be 4 letters or longer. You have 3 minutes! <br />
                 There are {solution?.size} words to find
               </>
             ) : (
               <>
-                Click "Play Now" to begin playing! <br /> Words must be 4 letters or
-                longer. You have 3 minutes! <br /> There are {solution?.size} words
-                to find
+                Click "Play Now" to begin playing! <br /> Words must be 4
+                letters or longer. You have 3 minutes! <br /> There are{" "}
+                {solution?.size} words to find
               </>
             )}
           </p>
@@ -295,6 +505,7 @@ const Game: React.FC<GameProps> = ({ isDaily, isTempus = false }) => {
                 wordValidator={wordValidator}
                 setUserWords={setUserWords}
                 moveValidator={moveValidator}
+                activeTiles={activeTiles}
               />
               <Box
                 sx={{ display: "flex", gap: "10px", justifyContent: "center" }}
@@ -327,6 +538,14 @@ const Game: React.FC<GameProps> = ({ isDaily, isTempus = false }) => {
               <Typography className="subtitle">
                 Time Left: {formatTime(timeLeft)}
               </Typography>
+              {keyboardInput && (
+                <Typography
+                  className="subtitle"
+                  sx={{ mt: 1, fontWeight: "bold" }}
+                >
+                  {keyboardInput}
+                </Typography>
+              )}
             </Box>
           ))}
         <Box

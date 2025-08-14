@@ -13,6 +13,7 @@ interface BoardProps {
   wordValidator: WordValidator;
   setUserWords: Dispatch<SetStateAction<string[]>>;
   moveValidator: MoveValidator;
+  activeTiles?: Set<string>;
 }
 
 enum SubmissionMethod {
@@ -28,6 +29,7 @@ const Board: React.FC<BoardProps> = ({
   wordValidator,
   setUserWords,
   moveValidator,
+  activeTiles = new Set(),
 }) => {
   const [highlightedCells, setHighlightedCells] = useState<Coordinate[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -51,6 +53,25 @@ const Board: React.FC<BoardProps> = ({
       return;
     }
     setOpen(false);
+  };
+
+  // Check if a tile should be highlighted based on keyboard input
+  const isKeyboardActive = (row: number, col: number): boolean => {
+    return activeTiles.has(`${row}-${col}`);
+  };
+
+  // Get the background color for a tile based on its state
+  const getTileBackgroundColor = (row: number, col: number, theme: any) => {
+    const isHighlighted = highlightedCells.some(cell => cell.xCoord === row && cell.yCoord === col);
+    const isKeyboardHighlighted = isKeyboardActive(row, col);
+    
+    if (isHighlighted) {
+      return theme.palette.primary.main; // Mouse/touch selection
+    } else if (isKeyboardHighlighted) {
+      return theme.palette.primary.light; // Keyboard selection - using primary.light for blue
+    } else {
+      return theme.palette.background.paper; // Default
+    }
   };
   const handleTileClick = (row: number, col: number) => {
     if (isSearching) {
@@ -113,6 +134,12 @@ const Board: React.FC<BoardProps> = ({
   };
 
   const handleKeyDown = (event: KeyboardEvent) => {
+    // Only handle Enter/Space if we have highlighted cells (mouse/touch interaction)
+    // If no highlighted cells, let the Game component handle keyboard input (This is likely a bug because I have multiple event listeners)
+    if (highlightedCells.length === 0) {
+      return;
+    }
+    
     if (event.key === "Enter") {
       submitWord(false);
       setSubmissionMethod(SubmissionMethod.ENTER);
@@ -246,7 +273,7 @@ const Board: React.FC<BoardProps> = ({
                   display: "flex",
                   justifyContent: "center",
                   alignItems: "center",
-                  backgroundColor: theme.palette.background.paper,
+                  backgroundColor: getTileBackgroundColor(rowIndex, colIndex, theme), // Color is no longer blue, when typing
                   color: theme.palette.text.primary,
                   padding: "4px",
                   margin: "4px",
