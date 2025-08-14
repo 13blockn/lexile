@@ -24,9 +24,10 @@ const PUZZLE_SIZE = 5;
 
 interface GameProps {
   isDaily: boolean;
+  isTempus?: boolean;
 }
 
-const Game: React.FC<GameProps> = ({ isDaily }) => {
+const Game: React.FC<GameProps> = ({ isDaily, isTempus = false }) => {
   const letterShuffler = new LetterShuffler(PUZZLE_SIZE);
   const [letters, setLetters] = useState<string[][]>(letterShuffler.shuffle());
   const [wordValidator, setWordValidator] = useState<WordValidator | null>(
@@ -51,7 +52,16 @@ const Game: React.FC<GameProps> = ({ isDaily }) => {
     if (boardSetup) {
       setLetters(BoardModel.mapStringToBoard(boardSetup, PUZZLE_SIZE));
     } else {
-      if (isDaily) {
+      if (isTempus) {
+        const tempusBoard = [
+          ['T', 'E', 'U', 'R', 'O'],
+          ['M', 'N', 'S', 'A', 'L'],
+          ['H', 'T', 'S', 'T', 'O'],
+          ['L', 'A', 'I', 'G', 'T'],
+          ['H', 'E', 'Y', 'N', 'I']
+        ];
+        setLetters(tempusBoard);
+      } else if (isDaily) {
         const today = new Date().toISOString().split("T")[0]; // Get today's date in YYYY-MM-DD format
         const playedDate = localStorage.getItem("dailyGamePlayed");
         const userWordsDaily = localStorage.getItem("userWordsDaily");
@@ -233,12 +243,22 @@ const Game: React.FC<GameProps> = ({ isDaily }) => {
         disableEscapeKeyDown
         aria-labelledby="start-dialog-title"
       >
-        <DialogTitle id="start-dialog-title">New game</DialogTitle>
+        <DialogTitle id="start-dialog-title">{ isTempus ? "Goodbye for now!" : "New game"}</DialogTitle>
         <DialogContent>
           <p>
-            Click "Play Now" to begin playing! <br /> Words must be 4 letters or
-            longer. You have 3 minutes! <br /> There are {solution?.size} words
-            to find
+            {isTempus ? (
+              <>
+                This is a Tempus specific version of Boggle, so expect some neuro words to be sprinkled in. No proper nouns though. <br />
+                Words must be 4 letters or longer. You have 3 minutes! <br />
+                There are {solution?.size} words to find
+              </>
+            ) : (
+              <>
+                Click "Play Now" to begin playing! <br /> Words must be 4 letters or
+                longer. You have 3 minutes! <br /> There are {solution?.size} words
+                to find
+              </>
+            )}
           </p>
         </DialogContent>
         <DialogActions>
