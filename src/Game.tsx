@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import "./App.css";
 import { LetterShuffler } from "./algorithm/LetterShuffler";
-import Board from "./Board";
+import Board, { BoardRef } from "./Board";
 import { Board as BoardModel } from "./models/Board";
 import { PuzzleSolver } from "./algorithm/PuzzleSolver";
 import { MoveValidator } from "./algorithm/MoveValidator";
@@ -49,6 +49,7 @@ const Game: React.FC<GameProps> = ({ isDaily, isTempus = false }) => {
   const [activeTiles, setActiveTiles] = useState<Set<string>>(new Set());
   //const [alreadyPlayed, setAlreadyPlayed] = useState(false);
 
+  const boardRef = useRef<BoardRef>(null);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const boardSetup = searchParams.get("board");
@@ -259,33 +260,17 @@ const Game: React.FC<GameProps> = ({ isDaily, isTempus = false }) => {
 
       const key = event.key.toUpperCase();
 
-      // Handle Enter key to submit word and clear input
-      if (event.key === "Enter") {
-        if (keyboardInput.length >= 4 && validPaths.length > 0) {
-          // Submit the first valid path found
-          const firstPath = validPaths[0];
-          const word = firstPath.map((coord) => board!.getTile(coord)).join("");
-
-          if (wordValidator?.check(word)) {
-            setUserWords((prev) => {
-              if (!prev.includes(word)) {
-                return [word, ...prev];
-              }
-              return prev;
-            });
-          }
+      // First, try to let Board component handle Enter/Space for mouse/touch interactions
+      if (event.key === "Enter" || event.key === " ") {
+        const boardHandled = boardRef.current?.handleKeyboardSubmit(event.key);
+        if (boardHandled) {
+          return; // Board component handled it, we're done
         }
 
-        // Clear keyboard input after submission
-        setKeyboardInput("");
-        setValidPaths([]);
-        setActiveTiles(new Set());
-        return;
-      }
-
-      // Handle Space key to submit word but keep input for similar words
-      if (event.key === " ") {
-        event.preventDefault(); // Prevent page scrolling
+        // Board didn't handle it, so handle keyboard input
+        if (event.key === " ") {
+          event.preventDefault(); // Prevent page scrolling
+        }
 
         if (keyboardInput.length >= 4 && validPaths.length > 0) {
           // Submit the first valid path found
@@ -302,7 +287,15 @@ const Game: React.FC<GameProps> = ({ isDaily, isTempus = false }) => {
           }
         }
 
-        // Keep the keyboard input active for similar words (don't clear)
+        // Handle Enter vs Space differently
+        if (event.key === "Enter") {
+          // Clear keyboard input after Enter
+          setKeyboardInput("");
+          setValidPaths([]);
+          setActiveTiles(new Set());
+        }
+        // Space keeps the keyboard input active for similar words
+
         return;
       }
 
@@ -501,6 +494,7 @@ const Game: React.FC<GameProps> = ({ isDaily, isTempus = false }) => {
               }}
             >
               <Board
+                ref={boardRef}
                 board={board}
                 wordValidator={wordValidator}
                 setUserWords={setUserWords}

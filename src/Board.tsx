@@ -1,4 +1,12 @@
-import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
+import {
+  Dispatch,
+  SetStateAction,
+  useEffect,
+  useState,
+  useImperativeHandle,
+  forwardRef,
+  useCallback,
+} from "react";
 import { WordValidator } from "./algorithm/WordValidator";
 import { Board as BoardModel } from "./models/Board";
 import "./Board.css";
@@ -16,6 +24,10 @@ interface BoardProps {
   activeTiles?: Set<string>;
 }
 
+export interface BoardRef {
+  handleKeyboardSubmit: (key: string) => boolean;
+}
+
 enum SubmissionMethod {
   SWIPE,
   ENTER,
@@ -24,309 +36,331 @@ enum SubmissionMethod {
 }
 
 // WordValidator is undefined
-const Board: React.FC<BoardProps> = ({
-  board,
-  wordValidator,
-  setUserWords,
-  moveValidator,
-  activeTiles = new Set(),
-}) => {
-  const [highlightedCells, setHighlightedCells] = useState<Coordinate[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const [submissionMethod, setSubmissionMethod] =
-    useState<SubmissionMethod | null>();
-  const [rowIdx, setRowIndex] = useState<number>();
-  const [colIdx, setColIndex] = useState<number>();
+const Board = forwardRef<BoardRef, BoardProps>(
+  (
+    {
+      board,
+      wordValidator,
+      setUserWords,
+      moveValidator,
+      activeTiles = new Set(),
+    },
+    ref
+  ) => {
+    const [highlightedCells, setHighlightedCells] = useState<Coordinate[]>([]);
+    const [isSearching, setIsSearching] = useState(false);
+    const [submissionMethod, setSubmissionMethod] =
+      useState<SubmissionMethod | null>();
+    const [rowIdx, setRowIndex] = useState<number>();
+    const [colIdx, setColIndex] = useState<number>();
 
-  const [open, setOpen] = useState(false);
-  const [alertMessage, setAlertMessage] = useState("");
-  const [alertSeverity, setAlertSeverity] = useState<"success" | "error">(
-    "success"
-  );
+    const [open, setOpen] = useState(false);
+    const [alertMessage, setAlertMessage] = useState("");
+    const [alertSeverity, setAlertSeverity] = useState<"success" | "error">(
+      "success"
+    );
 
-  const boardLetters = board.getLetters();
-  const boardSize = boardLetters.length;
+    const boardLetters = board.getLetters();
+    const boardSize = boardLetters.length;
 
-  const handleSnackBarClose = (event?: any, reason?: string) => {
-    if (reason === "clickaway") {
-      console.log(event);
-      return;
-    }
-    setOpen(false);
-  };
+    const handleSnackBarClose = (event?: any, reason?: string) => {
+      if (reason === "clickaway") {
+        console.log(event);
+        return;
+      }
+      setOpen(false);
+    };
 
-  // Check if a tile should be highlighted based on keyboard input
-  const isKeyboardActive = (row: number, col: number): boolean => {
-    return activeTiles.has(`${row}-${col}`);
-  };
+    // Check if a tile should be highlighted based on keyboard input
+    const isKeyboardActive = (row: number, col: number): boolean => {
+      return activeTiles.has(`${row}-${col}`);
+    };
 
-  // Get the background color for a tile based on its state
-  const getTileBackgroundColor = (row: number, col: number, theme: any) => {
-    const isHighlighted = highlightedCells.some(cell => cell.xCoord === row && cell.yCoord === col);
-    const isKeyboardHighlighted = isKeyboardActive(row, col);
-    
-    if (isHighlighted) {
-      return theme.palette.primary.main; // Mouse/touch selection
-    } else if (isKeyboardHighlighted) {
-      return theme.palette.primary.light; // Keyboard selection - using primary.light for blue
-    } else {
-      return theme.palette.background.paper; // Default
-    }
-  };
-  const handleTileClick = (row: number, col: number) => {
-    if (isSearching) {
-      setSubmissionMethod(SubmissionMethod.CLICK);
-      submitWord(false);
-      return;
-    }
-    setIsSearching(true);
-    setSubmissionMethod(null);
-    highlightCell(row, col);
-    setHighlightedCells([new Coordinate(row, col)]);
-  };
+    // Get the background color for a tile based on its state
+    const getTileBackgroundColor = (row: number, col: number, theme: any) => {
+      const isHighlighted = highlightedCells.some(
+        (cell) => cell.xCoord === row && cell.yCoord === col
+      );
+      const isKeyboardHighlighted = isKeyboardActive(row, col);
 
-  const handlePointerEnter = (row: number, col: number) => {
-    if (!isSearching || submissionMethod === SubmissionMethod.CLICK) {
-      // Do nothing if we're not in search mode
-      return;
-    }
-    setHighlightedCells((prev: Coordinate[]) => {
-      const prevCell = prev[prev.length - 1]; // Check for most recent square so you don't enter twice
-      const lastCell = prev[prev.length - 2]; // Check for previous location to allow backtracking
-      const newCoord = new Coordinate(row, col);
-
-      if (!moveValidator.isAdjacent(prevCell, newCoord)) {
-        return prev;
-      } else if (lastCell?.equals(newCoord)) {
-        // Backtracking. Remove the head if we went back to an old tile
-        const prevCell = prev[prev.length - 1];
-
-        const cellElement = document.querySelector(
-          `[data-row='${prevCell.xCoord}'][data-col='${prevCell.yCoord}']`
-        );
-        if (cellElement) {
-          cellElement.classList.remove("highlight");
-        }
-        return prev.slice(0, -1);
-      } else if (prevCell.equals(newCoord)) {
-        return prev;
+      if (isHighlighted) {
+        return theme.palette.primary.main; // Mouse/touch selection
+      } else if (isKeyboardHighlighted) {
+        return theme.palette.primary.light; // Keyboard selection - using primary.light for blue
       } else {
-        highlightedCells.forEach((cell) => {
-          if (cell.equals(newCoord)) {
-            return prev;
-          }
-        });
-
-        highlightCell(row, col);
-        return [...prev, newCoord];
+        return theme.palette.background.paper; // Default
       }
-    });
-  };
+    };
+    const handleTileClick = (row: number, col: number) => {
+      if (isSearching) {
+        setSubmissionMethod(SubmissionMethod.CLICK);
+        submitWord(false);
+        return;
+      }
+      setIsSearching(true);
+      setSubmissionMethod(null);
+      highlightCell(row, col);
+      setHighlightedCells([new Coordinate(row, col)]);
+    };
 
-  // Need a special function for highlighting cells because the mouse event happens on the child element
-  const highlightCell = (row: number, col: number) => {
-    const cellElement = document.querySelector(
-      `[data-row='${row}'][data-col='${col}']`
-    );
-    if (cellElement) {
-      cellElement.classList.add("highlight");
-    }
-  };
+    const handlePointerEnter = (row: number, col: number) => {
+      if (!isSearching || submissionMethod === SubmissionMethod.CLICK) {
+        // Do nothing if we're not in search mode
+        return;
+      }
+      setHighlightedCells((prev: Coordinate[]) => {
+        const prevCell = prev[prev.length - 1]; // Check for most recent square so you don't enter twice
+        const lastCell = prev[prev.length - 2]; // Check for previous location to allow backtracking
+        const newCoord = new Coordinate(row, col);
 
-  const handleKeyDown = (event: KeyboardEvent) => {
-    // Only handle Enter/Space if we have highlighted cells (mouse/touch interaction)
-    // If no highlighted cells, let the Game component handle keyboard input (This is likely a bug because I have multiple event listeners)
-    if (highlightedCells.length === 0) {
-      return;
-    }
-    
-    if (event.key === "Enter") {
-      submitWord(false);
-      setSubmissionMethod(SubmissionMethod.ENTER);
-    } else if (event.key === " ") {
-      event.preventDefault(); // Prevent the default space key behavior (scrolling)
-      submitWord(true);
-      setSubmissionMethod(SubmissionMethod.SPACE);
-    }
-  };
+        if (!moveValidator.isAdjacent(prevCell, newCoord)) {
+          return prev;
+        } else if (lastCell?.equals(newCoord)) {
+          // Backtracking. Remove the head if we went back to an old tile
+          const prevCell = prev[prev.length - 1];
 
-  const submitWord = (continueSolving: boolean) => {
-    const highlightedLetters = highlightedCells.map(
-      (cell) => boardLetters[cell.xCoord][cell.yCoord]
-    );
-    const highlightedWord = highlightedLetters.join("");
-    const isValidWord = wordValidator.check(highlightedWord);
-    // For now, score is only available at the end
-    if (isValidWord) {
-      setUserWords((prev) => {
-        if (!prev.includes(highlightedWord)) {
-          setAlertMessage(getWordLengthMessage(highlightedWord.length));
-          return [highlightedWord, ...prev];
-        }
-        setAlertMessage("Word already found. Try again!");
-        return prev;
-      });
-      setAlertSeverity("success");
-      setOpen(true);
-    } else {
-      setAlertMessage("Invalid word. Try again!");
-      setAlertSeverity("error");
-      setOpen(true);
-    }
-
-    // Keep the current word for faster solving
-    if (continueSolving) {
-      return;
-    }
-    document.querySelectorAll(".highlight").forEach((element) => {
-      element.classList.remove("highlight");
-    });
-    setHighlightedCells([]);
-    setIsSearching(false);
-  };
-
-  useEffect(() => {
-    const handleTouchMove = (event: TouchEvent) => {
-      event.preventDefault();
-      if (rowIdx !== undefined && colIdx !== undefined) {
-        const touch = event.touches[0];
-        const target = document.elementFromPoint(
-          touch.clientX,
-          touch.clientY
-        ) as HTMLElement;
-
-        if (
-          target &&
-          target.classList.contains("board-text") &&
-          target.dataset.row !== undefined &&
-          target.dataset.col !== undefined
-        ) {
-          const currentRow = parseInt(target.dataset.row, 10);
-          const currentCol = parseInt(target.dataset.col, 10);
-
-          // Calculate the distance from the center of the elemnt to register as a touch event
-          const rect = target.getBoundingClientRect();
-          const centerX = rect.left + rect.width / 2;
-          const centerY = rect.top + rect.height / 2;
-
-          const distance = Math.sqrt(
-            Math.pow(touch.clientX - centerX, 2) +
-              Math.pow(touch.clientY - centerY, 2)
+          const cellElement = document.querySelector(
+            `[data-row='${prevCell.xCoord}'][data-col='${prevCell.yCoord}']`
           );
+          if (cellElement) {
+            cellElement.classList.remove("highlight");
+          }
+          return prev.slice(0, -1);
+        } else if (prevCell.equals(newCoord)) {
+          return prev;
+        } else {
+          highlightedCells.forEach((cell) => {
+            if (cell.equals(newCoord)) {
+              return prev;
+            }
+          });
 
-          const threshold = 20;
+          highlightCell(row, col);
+          return [...prev, newCoord];
+        }
+      });
+    };
 
-          if (distance <= threshold) {
-            setRowIndex(currentRow);
-            setColIndex(currentCol);
-            handlePointerEnter(currentRow, currentCol);
+    // Need a special function for highlighting cells because the mouse event happens on the child element
+    const highlightCell = (row: number, col: number) => {
+      const cellElement = document.querySelector(
+        `[data-row='${row}'][data-col='${col}']`
+      );
+      if (cellElement) {
+        cellElement.classList.add("highlight");
+      }
+    };
+
+    // Expose submitWord function to parent component for keyboard handling
+    const handleKeyboardSubmit = useCallback(
+      (key: string) => {
+        if (highlightedCells.length === 0) {
+          return false; // Let Game component handle keyboard input
+        }
+
+        if (key === "Enter") {
+          submitWord(false);
+          setSubmissionMethod(SubmissionMethod.ENTER);
+          return true;
+        } else if (key === " ") {
+          submitWord(true);
+          setSubmissionMethod(SubmissionMethod.SPACE);
+          return true;
+        }
+
+        return false;
+      },
+      [highlightedCells]
+    );
+
+    const submitWord = (continueSolving: boolean) => {
+      const highlightedLetters = highlightedCells.map(
+        (cell) => boardLetters[cell.xCoord][cell.yCoord]
+      );
+      const highlightedWord = highlightedLetters.join("");
+      const isValidWord = wordValidator.check(highlightedWord);
+      // For now, score is only available at the end
+      if (isValidWord) {
+        setUserWords((prev) => {
+          if (!prev.includes(highlightedWord)) {
+            setAlertMessage(getWordLengthMessage(highlightedWord.length));
+            return [highlightedWord, ...prev];
+          }
+          setAlertMessage("Word already found. Try again!");
+          return prev;
+        });
+        setAlertSeverity("success");
+        setOpen(true);
+      } else {
+        setAlertMessage("Invalid word. Try again!");
+        setAlertSeverity("error");
+        setOpen(true);
+      }
+
+      // Keep the current word for faster solving
+      if (continueSolving) {
+        return;
+      }
+      document.querySelectorAll(".highlight").forEach((element) => {
+        element.classList.remove("highlight");
+      });
+      setHighlightedCells([]);
+      setIsSearching(false);
+    };
+
+    useEffect(() => {
+      const handleTouchMove = (event: TouchEvent) => {
+        event.preventDefault();
+        if (rowIdx !== undefined && colIdx !== undefined) {
+          const touch = event.touches[0];
+          const target = document.elementFromPoint(
+            touch.clientX,
+            touch.clientY
+          ) as HTMLElement;
+
+          if (
+            target &&
+            target.classList.contains("board-text") &&
+            target.dataset.row !== undefined &&
+            target.dataset.col !== undefined
+          ) {
+            const currentRow = parseInt(target.dataset.row, 10);
+            const currentCol = parseInt(target.dataset.col, 10);
+
+            // Calculate the distance from the center of the elemnt to register as a touch event
+            const rect = target.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+
+            const distance = Math.sqrt(
+              Math.pow(touch.clientX - centerX, 2) +
+                Math.pow(touch.clientY - centerY, 2)
+            );
+
+            const threshold = 20;
+
+            if (distance <= threshold) {
+              setRowIndex(currentRow);
+              setColIndex(currentCol);
+              handlePointerEnter(currentRow, currentCol);
+            }
           }
         }
-      }
-    };
+      };
 
-    const element = document.getElementById(`board-text-${rowIdx}-${colIdx}`);
-    if (element) {
-      element.addEventListener("touchmove", handleTouchMove, {
-        passive: false,
-      });
-    }
-
-    return () => {
+      const element = document.getElementById(`board-text-${rowIdx}-${colIdx}`);
       if (element) {
-        element.removeEventListener("touchmove", handleTouchMove);
+        element.addEventListener("touchmove", handleTouchMove, {
+          passive: false,
+        });
       }
-    };
-  }, [rowIdx, colIdx, handlePointerEnter]);
 
-  useEffect(() => {
-    window.addEventListener("keydown", handleKeyDown);
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [highlightedCells]);
+      return () => {
+        if (element) {
+          element.removeEventListener("touchmove", handleTouchMove);
+        }
+      };
+    }, [rowIdx, colIdx, handlePointerEnter]);
 
-  const theme = useTheme();
+    // Expose keyboard submit handler to parent component via ref
+    useImperativeHandle(
+      ref,
+      () => ({
+        handleKeyboardSubmit,
+      }),
+      [handleKeyboardSubmit]
+    );
 
-  return (
-    <Paper
-      elevation={3}
-      sx={{
-        padding: { xs: 2, sm: 4 },
-        borderRadius: 3,
-        backgroundColor: theme.palette.background.default,
-        maxWidth: 'fit-content',
-        margin: '0 auto',
-      }}
-    >
-      <div className="board">
-        {Array.from({ length: boardSize }).map((_, rowIndex) => (
-          <div key={rowIndex} className="board-row">
-            {Array.from({ length: boardSize }).map((_, colIndex) => (
-              <Box
-                key={colIndex}
-                data-row={rowIndex}
-                data-col={colIndex}
-                sx={{
-                  width: { xs: "63px", sm: "100px" },
-                  height: { xs: "63px", sm: "100px" },
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  backgroundColor: getTileBackgroundColor(rowIndex, colIndex, theme), // Color is no longer blue, when typing
-                  color: theme.palette.text.primary,
-                  padding: "4px",
-                  margin: "4px",
-                  borderRadius: "12px",
-                  transition: "all 0.2s ease",
-                }}
-              >
-                <div
-                  id={`board-text-${rowIndex}-${colIndex}`}
-                  className="board-text"
+    const theme = useTheme();
+
+    return (
+      <Paper
+        elevation={3}
+        sx={{
+          padding: { xs: 2, sm: 4 },
+          borderRadius: 3,
+          backgroundColor: theme.palette.background.default,
+          maxWidth: "fit-content",
+          margin: "0 auto",
+        }}
+      >
+        <div className="board">
+          {Array.from({ length: boardSize }).map((_, rowIndex) => (
+            <div key={rowIndex} className="board-row">
+              {Array.from({ length: boardSize }).map((_, colIndex) => (
+                <Box
+                  key={colIndex}
                   data-row={rowIndex}
                   data-col={colIndex}
-                  onPointerEnter={() => handlePointerEnter(rowIndex, colIndex)}
-                  onClick={() => handleTileClick(rowIndex, colIndex)}
-                  onTouchStart={() => {
-                    handleTileClick(rowIndex, colIndex);
-                    setRowIndex(rowIndex);
-                    setColIndex(colIndex);
-                  }}
-                  onTouchMove={() => {
-                    setRowIndex(rowIndex);
-                    setColIndex(colIndex);
-                  }}
-                  onTouchEnd={() => {
-                    handleTileClick(rowIndex, colIndex);
-                    setRowIndex(rowIndex);
-                    setColIndex(colIndex);
-                  }}
-                  style={{
-                    touchAction: "none",
+                  sx={{
+                    width: { xs: "63px", sm: "100px" },
+                    height: { xs: "63px", sm: "100px" },
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    backgroundColor: getTileBackgroundColor(
+                      rowIndex,
+                      colIndex,
+                      theme
+                    ), // Color is no longer blue, when typing
+                    color: theme.palette.text.primary,
+                    padding: "4px",
+                    margin: "4px",
+                    borderRadius: "12px",
+                    transition: "all 0.2s ease",
                   }}
                 >
-                  {boardLetters[rowIndex][colIndex] === "QU"
-                    ? "Qu"
-                    : boardLetters[rowIndex][colIndex]}
-                </div>
-              </Box>
-            ))}
-          </div>
-        ))}
-        <Snackbar
-          anchorOrigin={{ vertical: "top", horizontal: "center" }}
-          open={open}
-          autoHideDuration={750}
-          onClose={handleSnackBarClose}
-        >
-          <Alert onClose={handleSnackBarClose} severity={alertSeverity}>
-            {alertMessage}
-          </Alert>
-        </Snackbar>
-      </div>
-    </Paper>
-  );
-};
+                  <div
+                    id={`board-text-${rowIndex}-${colIndex}`}
+                    className="board-text"
+                    data-row={rowIndex}
+                    data-col={colIndex}
+                    onPointerEnter={() =>
+                      handlePointerEnter(rowIndex, colIndex)
+                    }
+                    onClick={() => handleTileClick(rowIndex, colIndex)}
+                    onTouchStart={() => {
+                      handleTileClick(rowIndex, colIndex);
+                      setRowIndex(rowIndex);
+                      setColIndex(colIndex);
+                    }}
+                    onTouchMove={() => {
+                      setRowIndex(rowIndex);
+                      setColIndex(colIndex);
+                    }}
+                    onTouchEnd={() => {
+                      handleTileClick(rowIndex, colIndex);
+                      setRowIndex(rowIndex);
+                      setColIndex(colIndex);
+                    }}
+                    style={{
+                      touchAction: "none",
+                    }}
+                  >
+                    {boardLetters[rowIndex][colIndex] === "QU"
+                      ? "Qu"
+                      : boardLetters[rowIndex][colIndex]}
+                  </div>
+                </Box>
+              ))}
+            </div>
+          ))}
+          <Snackbar
+            anchorOrigin={{ vertical: "top", horizontal: "center" }}
+            open={open}
+            autoHideDuration={750}
+            onClose={handleSnackBarClose}
+          >
+            <Alert onClose={handleSnackBarClose} severity={alertSeverity}>
+              {alertMessage}
+            </Alert>
+          </Snackbar>
+        </div>
+      </Paper>
+    );
+  }
+);
+
+Board.displayName = "Board";
 
 export default Board;
