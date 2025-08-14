@@ -55,22 +55,20 @@ const Board: React.FC<BoardProps> = ({
     setOpen(false);
   };
 
-  // Check if a tile should be highlighted based on keyboard input
   const isKeyboardActive = (row: number, col: number): boolean => {
     return activeTiles.has(`${row}-${col}`);
   };
 
-  // Get the background color for a tile based on its state
   const getTileBackgroundColor = (row: number, col: number, theme: any) => {
     const isHighlighted = highlightedCells.some(cell => cell.xCoord === row && cell.yCoord === col);
-    const isKeyboardHighlighted = isKeyboardActive(row, col);
+    const isKeyboardHighlighted = isKeyboardActive(row, col); // Not necessary for now
     
     if (isHighlighted) {
-      return theme.palette.primary.main; // Mouse/touch selection
+      return theme.palette.primary.main;
     } else if (isKeyboardHighlighted) {
-      return theme.palette.primary.light; // Keyboard selection - using primary.light for blue
+      return theme.palette.primary.main;
     } else {
-      return theme.palette.background.paper; // Default
+      return theme.palette.background.paper;
     }
   };
   const handleTileClick = (row: number, col: number) => {
